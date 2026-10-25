@@ -1,0 +1,51 @@
+@import '@fontsource-variable/inter';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+
+html, body, #root { min-height: 100%; }
+body {
+  @apply bg-bg text-white font-sans antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+}
+* { scrollbar-width: thin; scrollbar-color: #292929 transparent; }
+::selection { background: rgba(255, 23, 68, 0.4); }
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-[13px] font-semibold transition
+      duration-200 active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-50 select-none whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply btn text-white shadow-glow hover:brightness-110;
+    background: linear-gradient(180deg, #ff1744 0%, #d90429 100%);
+  }
+  .btn-secondary { @apply btn border border-line bg-card text-white hover:border-red/60 hover:bg-[#1d1d1d]; }
+  .btn-ghost { @apply btn text-muted hover:bg-card hover:text-white; }
+  .btn-danger { @apply btn border border-red/40 bg-red-soft text-red hover:bg-red/20; }
+  .btn-sm { @apply px-3 py-1.5 text-xs rounded-lg; }
+  .input {
+    @apply w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[13px] text-white placeholder:text-[#6b6b72]
+      outline-none transition focus:border-red/70 focus:ring-2 focus:ring-red/20;
+  }
+  .card { @apply rounded-2xl border border-line bg-card shadow-card; }
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-white/90 transition;
+  }
+  .chip-active { @apply border-red bg-red text-white; }
+  .label { @apply mb-1.5 block text-xs font-medium text-muted; }
+  .hide-scrollbar { scrollbar-width: none; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .glow-top { background: radial-gradient(60% 50% at 50% 0%, rgba(255, 23, 68, 0.22), transparent 70%); }
+  .skeleton { @apply relative overflow-hidden bg-[#1c1c1c]; }
+  .skeleton::after {
+    content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+.pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
