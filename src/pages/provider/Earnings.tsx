@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Banknote, CheckCircle2, Info, Landmark, Mail, Pencil } from 'lucide-react'
+import { Banknote, CheckCircle2, Info, Landmark, Pencil } from 'lucide-react'
 import { api, ApiError, errMsg } from '../../lib/api'
 import { useConfig } from '../../lib/auth'
 import { useToast } from '../../lib/toast'
@@ -13,7 +13,7 @@ interface Earnings {
   payouts: { id: string; reference: string; amount: number; status: string; bankName: string | null; accountNumberMasked: string | null; requestedAt: string; paidAt: string | null }[]
 }
 interface PayoutAccount { banks: string[]; account: { bankName: string; accountName: string; accountNumberMasked: string } | null }
-type Step = { kind: 'amount' } | { kind: 'code'; otpId: string; sentTo: string } | { kind: 'done'; reference: string; amount: number }
+type Step = { kind: 'amount' } | { kind: 'done'; reference: string; amount: number }
 
 export function EarningsPage() {
   const { data, isLoading } = useQuery({ queryKey: ['earnings'], queryFn: () => api.get<Earnings>('/provider/earnings') })
@@ -24,26 +24,20 @@ export function EarningsPage() {
   const [open, setOpen] = useState(false)
   const [amount, setAmount] = useState('')
   const [step, setStep] = useState<Step>({ kind: 'amount' })
-  const [code, setCode] = useState('')
   const [editAcct, setEditAcct] = useState(false)
   const [bank, setBank] = useState('')
   const [number, setNumber] = useState('')
   const [holder, setHolder] = useState('')
 
-  const closeWithdraw = () => { setOpen(false); setStep({ kind: 'amount' }); setAmount(''); setCode('') }
+  const closeWithdraw = () => { setOpen(false); setStep({ kind: 'amount' }); setAmount('') }
   const saveAcct = useMutation({
     mutationFn: () => api.put('/provider/payout-account', { bankName: bank, accountNumber: number, accountName: holder }),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['payout-account'] }); setEditAcct(false); toast('Bank account saved', 'success') }, onError: (e) => toast(errMsg(e), 'error'),
   })
-  const sendCode = useMutation({
-    mutationFn: () => api.post<{ otpId: string; sentTo: string }>('/provider/payouts/request', { amount: Math.round(Number(amount) * 100) }),
-    onSuccess: (r) => { setCode(''); setStep({ kind: 'code', otpId: r.otpId, sentTo: r.sentTo }) },
-    onError: (e) => { if (e instanceof ApiError && e.code === 'NO_PAYOUT_ACCOUNT') { closeWithdraw(); openAcct() } else toast(errMsg(e), 'error') },
-  })
-  const confirm = useMutation({
-    mutationFn: () => api.post<{ reference: string; amount: number }>('/provider/payouts/confirm', { otpId: (step as { otpId: string }).otpId, code }),
+  const withdraw = useMutation({
+    mutationFn: () => api.post<{ reference: string; amount: number }>('/provider/payouts', { amount: Math.round(Number(amount) * 100) }),
     onSuccess: (r) => { qc.invalidateQueries({ queryKey: ['earnings'] }); setStep({ kind: 'done', reference: r.reference, amount: r.amount }) },
-    onError: (e) => toast(errMsg(e), 'error'),
+    onError: (e) => { if (e instanceof ApiError && e.code === 'NO_PAYOUT_ACCOUNT') { closeWithdraw(); openAcct() } else toast(errMsg(e), 'error') },
   })
   const openAcct = () => { setBank(acct.data?.account?.bankName ?? ''); setNumber(''); setHolder(acct.data?.account?.accountName ?? ''); setEditAcct(true) }
   const startWithdraw = () => {
@@ -65,7 +59,7 @@ export function EarningsPage() {
         </div>
         <button className="btn-secondary btn-sm" onClick={openAcct}>{acct.data?.account ? <><Pencil size={13} /> Change</> : 'Add account'}</button>
       </div>
-      <p className="mb-4 flex gap-2 rounded-xl border border-line bg-card p-3 text-xs text-muted"><Info size={15} className="mt-0.5 shrink-0" />To withdraw, we email you a 6-digit code to confirm. Once confirmed, your money reaches your bank account within 24 hours.</p>
+      <p className="mb-4 flex gap-2 rounded-xl border border-line bg-card p-3 text-xs text-muted"><Info size={15} className="mt-0.5 shrink-0" />Withdraw whenever you like. Your money reaches your bank account within 24 hours.</p>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="Payable balance" value={naira(s.payableBalance)} accent hint="Available to withdraw" />
         {s.holdDays > 0 && <Stat label="Pending balance" value={naira(s.pendingBalance)} hint={`In ${s.holdDays}-day hold`} />}
@@ -92,15 +86,7 @@ export function EarningsPage() {
             <p className="text-sm text-muted">Payable balance: <span className="font-semibold text-white">{naira(s.payableBalance)}</span>. Minimum {naira(cfg?.minPayoutKobo ?? 0)}.</p>
             <p className="rounded-xl bg-surface p-3 text-xs text-muted">Sending to <span className="text-white">{acct.data?.account?.bankName} {acct.data?.account?.accountNumberMasked}</span> · {acct.data?.account?.accountName}</p>
             <Field label="Amount (₦)"><Input type="number" inputMode="numeric" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0" /></Field>
-            <Button className="w-full" loading={sendCode.isPending} disabled={!Number(amount)} onClick={() => sendCode.mutate()}>Send me a confirmation code</Button>
-          </div>
-        )}
-        {step.kind === 'code' && (
-          <div className="space-y-4">
-            <p className="flex items-start gap-2 text-sm text-muted"><Mail size={16} className="mt-0.5 shrink-0 text-red" />We sent a 6-digit code to <span className="font-semibold text-white">{step.sentTo}</span>. It expires in 10 minutes.</p>
-            <Field label="Confirmation code"><Input inputMode="numeric" autoFocus maxLength={6} placeholder="••••••" className="text-center text-lg tracking-[0.5em]" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} onKeyDown={(e) => e.key === 'Enter' && code.length === 6 && confirm.mutate()} /></Field>
-            <Button className="w-full" loading={confirm.isPending} disabled={code.length !== 6} onClick={() => confirm.mutate()}>Confirm withdrawal of {naira(Math.round(Number(amount) * 100))}</Button>
-            <button className="btn-ghost btn-sm w-full" disabled={sendCode.isPending} onClick={() => sendCode.mutate()}>Send a new code</button>
+            <Button className="w-full" loading={withdraw.isPending} disabled={!Number(amount)} onClick={() => withdraw.mutate()}>Withdraw {Number(amount) ? naira(Math.round(Number(amount) * 100)) : ''}</Button>
           </div>
         )}
         {step.kind === 'done' && (

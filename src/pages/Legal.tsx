@@ -74,7 +74,7 @@ export const Terms = () => (
     <section id="providers"><h2>6. Provider earnings and withdrawals</h2>
       <ul>
         <li><strong>Commission.</strong> When a client unlocks a provider's content, JaraPlug keeps a platform commission (currently <strong>20%</strong>) and the rest is added to the provider's earnings. The exact split is shown on the Earnings page.</li>
-        <li><strong>Withdrawing.</strong> Providers add a bank account in their name and request a withdrawal. We email a confirmation code to the address on the account. Once the code is confirmed, we send the money by bank transfer, normally <strong>within 24 hours</strong>. The minimum withdrawal is currently ₦1,000.</li>
+        <li><strong>Withdrawing.</strong> Providers add a bank account in their name and request a withdrawal. We then send the money by bank transfer, normally <strong>within 24 hours</strong>. The minimum withdrawal is currently ₦1,000.</li>
         <li><strong>Your responsibility.</strong> Check your bank details carefully. We pay exactly the account you give us and cannot recover transfers sent to a wrong account because of an error in those details.</li>
         <li><strong>Holds and reversals.</strong> We may delay, withhold or reverse earnings or withdrawals where we reasonably suspect fraud, a chargeback, a refund, a breach of these Terms or an unlawful sale, or where the law or a payment partner requires it.</li>
         <li><strong>Independent providers.</strong> Providers are independent users, not employees, agents or partners of JaraPlug. Providers are responsible for their own taxes and for any licences or registrations their activity needs.</li>
@@ -136,7 +136,7 @@ export const Privacy = () => (
         <li><strong>Messages</strong> — text, images and voice notes you send, and when messages are delivered and read.</li>
         <li><strong>Activity</strong> — appointment requests, favourites, purchases and unlocks, reports you file, notifications and support requests.</li>
         <li><strong>Payments and credits</strong> — your credit balance and history, and payment references and amounts. Card and bank details used to buy credits are handled by Paystack; <strong>we never see or store your card number</strong>.</li>
-        <li><strong>Provider payout details</strong> — for providers who withdraw: bank name, account number and account name, plus the email confirmation codes used to approve withdrawals (stored only in scrambled form).</li>
+        <li><strong>Provider payout details</strong> — for providers who withdraw: bank name, account number and account name, used only to pay out your earnings.</li>
         <li><strong>Technical information</strong> — device and browser type, IP address, log and security events (for example failed sign-in or rate-limit events), and the approximate time of activity such as when you were last online.</li>
       </ul>
       <p>We do not ask for, and do not store, copies of identity documents.</p></section>
@@ -163,7 +163,7 @@ export const Privacy = () => (
     <section id="share"><h2>5. Who we share it with</h2>
       <p>We share information only as needed to run JaraPlug:</p>
       <ul>
-        <li><strong>Service providers</strong> who process data for us under agreements: our sign-in provider (Clerk), our payment partner (Paystack), cloud hosting and media storage, and email delivery. They may only use the data to provide their service to us.</li>
+        <li><strong>Service providers</strong> who process data for us under agreements: our sign-in provider (Clerk), our payment partner (Paystack), and cloud hosting and media storage. They may only use the data to provide their service to us.</li>
         <li><strong>Authorities and legal requests</strong> where required by law, or where needed to protect people from harm, for example in cases involving minors, exploitation or non-consensual imagery.</li>
         <li><strong>A buyer of the business</strong> if JaraPlug is ever sold or merged, who must honour this policy.</li>
       </ul>
@@ -190,7 +190,7 @@ export const Privacy = () => (
       <ul>
         <li>Media is stored privately and delivered through short-lived signed links. Access is checked on our servers each time.</li>
         <li>Connections are encrypted, and access to administrative tools is restricted and logged.</li>
-        <li>Withdrawals require an emailed one-time code.</li>
+        <li>Bank details are used only to pay your withdrawals, and changing them sends you a notification.</li>
       </ul>
       <p>No system is completely secure. Use a strong password, keep your email account safe, and tell us straight away at <Mail /> if you think your account has been accessed by someone else.</p></section>
 
