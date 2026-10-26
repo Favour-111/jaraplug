@@ -7,7 +7,7 @@ import { useMe } from '../lib/auth'
 import { useRealtime } from '../lib/realtime'
 import { useToast } from '../lib/toast'
 import type { Conversation, Message, UserSummary } from '../lib/types'
-import { Avatar, EmptyState, Modal, OnlineDot, Skeleton, Spinner } from '../components/ui'
+import { Avatar, EmptyState, LoadImage, Modal, OnlineDot, Skeleton, Spinner } from '../components/ui'
 import { BlockDialog, ReportDialog } from '../components/Dialogs'
 import { chatTime, timeOnly } from '../lib/format'
 
@@ -317,7 +317,7 @@ function Thread({ id, base }: { id: string; base: string }) {
               {showDay && <p className="my-3 text-center text-[11px] text-muted">{new Date(m.createdAt).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'short' })}</p>}
               <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-snug ${mine ? 'rounded-br-md bg-gradient-to-b from-red to-red-dark' : 'rounded-bl-md bg-[#232323]'}`}>
-                  {m.messageType === 'IMAGE' && m.attachmentUrl && <button onClick={() => setPreview(m.attachmentUrl)} className="mb-1 block overflow-hidden rounded-xl"><img src={m.attachmentUrl} alt="Shared" className="max-h-60 w-full object-cover" draggable={false} /></button>}
+                  {m.messageType === 'IMAGE' && <button onClick={() => m.attachmentUrl && setPreview(m.attachmentUrl)} className="mb-1 block overflow-hidden rounded-xl"><LoadImage src={m.attachmentUrl} alt="Shared" className="max-h-60 w-full object-cover" box="h-48 w-56 max-w-full bg-black/25" draggable={false} /></button>}
                   {m.messageType === 'AUDIO' && m.attachmentUrl && <VoicePlayer src={m.attachmentUrl} seconds={m.durationSeconds} />}
                   {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                   <p className={`mt-1 flex items-center gap-1 text-[10px] ${mine ? 'justify-end text-white/70' : 'text-muted'}`}>{timeOnly(m.createdAt)}{mine && <Ticks m={m} />}</p>
@@ -381,7 +381,7 @@ function Thread({ id, base }: { id: string; base: string }) {
       )}
 
       <CameraModal open={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={(f) => pickImage(f)} />
-      <Modal open={!!preview} onClose={() => setPreview(null)} wide>{preview && <img src={preview} alt="" className="max-h-[70vh] w-full rounded-xl object-contain" />}</Modal>
+      <Modal open={!!preview} onClose={() => setPreview(null)} wide>{preview && <LoadImage src={preview} className="max-h-[70vh] w-full rounded-xl object-contain" box="h-64 w-full" ringSize={44} />}</Modal>
       {other && <ReportDialog open={report} onClose={() => setReport(false)} reportedUserId={other.id} label={`Report ${other.displayName}`} />}
       {other && <BlockDialog open={block} onClose={() => setBlock(false)} userId={other.id} name={other.displayName} onDone={() => { qc.invalidateQueries({ queryKey: ['conversations'] }); nav(base) }} />}
     </div>

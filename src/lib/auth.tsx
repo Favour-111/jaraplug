@@ -8,22 +8,27 @@ export const USING_CLERK = !!CLERK_KEY
 
 export interface AuthState {
   status: 'loading' | 'signedOut' | 'signedIn'
+  /** Stable id of the signed-in account (null when signed out / still loading). Used to keep per-account local caches apart. */
+  userKey: string | null
   signOut: () => Promise<void>
   /** dev mode only */
   devSignIn: (token: string) => void
 }
-const AuthCtx = createContext<AuthState>({ status: 'loading', signOut: async () => {}, devSignIn: () => {} })
+const AuthCtx = createContext<AuthState>({ status: 'loading', userKey: null, signOut: async () => {}, devSignIn: () => {} })
 export const useAuthState = () => useContext(AuthCtx)
 
 const ClerkAuth = lazy(() => import('./ClerkAuth'))
 
 const DEV_KEY = 'jp_dev_token'
+/** Non-reversible key so the raw dev token never doubles as a storage key. */
+function hashString(s: string) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36) }
 function DevAuth({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => { try { return localStorage.getItem(DEV_KEY) } catch { return null } })
   useEffect(() => { setTokenGetter(async () => token) }, [token])
   setTokenGetter(async () => token) // synchronous so first queries have it
   const value = useMemo<AuthState>(() => ({
     status: token ? 'signedIn' : 'signedOut',
+    userKey: token ? `dev-${hashString(token)}` : null,
     signOut: async () => { try { localStorage.removeItem(DEV_KEY) } catch { /* */ } setToken(null) },
     devSignIn: (t) => { try { localStorage.setItem(DEV_KEY, t) } catch { /* */ } setToken(t) },
   }), [token])

@@ -4,14 +4,15 @@ import { setTokenGetter } from './api'
 import { CLERK_KEY, type AuthState } from './auth'
 
 function Bridge({ AuthCtx, children }: { AuthCtx: Context<AuthState>; children: ReactNode }) {
-  const { isLoaded, isSignedIn, getToken, signOut } = useAuth()
+  const { isLoaded, isSignedIn, userId, getToken, signOut } = useAuth()
   setTokenGetter(async () => (isSignedIn ? getToken() : null))
   useEffect(() => { setTokenGetter(async () => (isSignedIn ? getToken() : null)) }, [isSignedIn, getToken])
   const value = useMemo<AuthState>(() => ({
     status: !isLoaded ? 'loading' : isSignedIn ? 'signedIn' : 'signedOut',
+    userKey: isLoaded && isSignedIn ? (userId ?? null) : null,
     signOut: async () => { await signOut() },
     devSignIn: () => {},
-  }), [isLoaded, isSignedIn, signOut])
+  }), [isLoaded, isSignedIn, userId, signOut])
   return <AuthCtx.Provider value={value}>{children}</AuthCtx.Provider>
 }
 

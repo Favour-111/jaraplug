@@ -7,7 +7,7 @@ import { useAuthState, useConfig, useMe } from '../lib/auth'
 import type { ProviderProfileData } from '../lib/types'
 import { ContentCard } from '../components/ContentCard'
 import { BlockDialog, ReportDialog } from '../components/Dialogs'
-import { Button, DemoChip, EmptyState, OnlineDot, Skeleton, Tabs, VerifiedBadge } from '../components/ui'
+import { Button, DemoChip, EmptyState, LoadImage, OnlineDot, Skeleton, Tabs, VerifiedBadge } from '../components/ui'
 import { useToast } from '../lib/toast'
 
 type Tab = 'about' | 'photos' | 'videos'
@@ -68,7 +68,7 @@ export function ProviderProfilePage() {
       {/* Hero image */}
       <div className="relative md:sticky md:top-6 md:self-start">
         <div className="relative aspect-[4/5] overflow-hidden bg-[#1c1c1c] md:rounded-3xl">
-          {p.avatarUrl && <img src={p.avatarUrl} alt={p.displayName} className="h-full w-full object-cover" draggable={false} />}
+          {p.avatarUrl && <LoadImage src={p.avatarUrl} alt={p.displayName} className="h-full w-full object-cover" draggable={false} />}
           <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/10 to-black/40" />
           <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
             <button onClick={back} aria-label="Back" className="grid h-10 w-10 place-items-center rounded-full bg-black/40 backdrop-blur hover:bg-black/60"><ArrowLeft size={18} /></button>
@@ -100,7 +100,7 @@ export function ProviderProfilePage() {
 
         {gallery.length > 0 && (
           <div className="mt-5 grid grid-cols-4 gap-2">
-            {gallery.slice(0, 3).map((c) => <button key={c.id} onClick={() => setTab('photos')} className="aspect-square overflow-hidden rounded-xl border border-line"><img src={c.url ?? c.thumbnailUrl ?? ''} alt="" className="h-full w-full object-cover" draggable={false} /></button>)}
+            {gallery.slice(0, 3).map((c) => <button key={c.id} onClick={() => setTab('photos')} className="relative aspect-square overflow-hidden rounded-xl border border-line"><LoadImage src={c.url ?? c.thumbnailUrl} className="h-full w-full object-cover" draggable={false} ringSize={24} /></button>)}
             {gallery.length > 3 && <button onClick={() => setTab('photos')} className="grid aspect-square place-items-center rounded-xl border border-line bg-card text-sm font-semibold">+{gallery.length - 3}</button>}
           </div>
         )}

@@ -5,7 +5,7 @@ import { api } from '../lib/api'
 import { useAuthState } from '../lib/auth'
 import { useToast } from '../lib/toast'
 import type { ProviderCardData } from '../lib/types'
-import { DemoChip, VerifiedBadge } from './ui'
+import { DemoChip, LoadImage, VerifiedBadge } from './ui'
 
 export function ProfileCard({ p, onRequireLogin }: { p: ProviderCardData; onRequireLogin?: () => void }) {
   const { status } = useAuthState()
@@ -24,7 +24,7 @@ export function ProfileCard({ p, onRequireLogin }: { p: ProviderCardData; onRequ
     <div className="group relative overflow-hidden rounded-2xl border border-line bg-card shadow-card transition duration-300 hover:-translate-y-0.5 hover:border-red/50">
       <Link to={`/profile/${p.username}`} className="block" aria-label={`Open ${p.displayName}'s profile`}>
         <div className="relative aspect-[3/4] overflow-hidden bg-[#1c1c1c]">
-          {p.avatarUrl && <img src={p.avatarUrl} alt={p.displayName} loading="lazy" draggable={false} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+          {p.avatarUrl && <LoadImage src={p.avatarUrl} alt={p.displayName} loading="lazy" draggable={false} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
           {p.isDemo && <span className="absolute left-2 top-2"><DemoChip /></span>}
           <div className="absolute inset-x-0 bottom-0 p-3 pr-12">

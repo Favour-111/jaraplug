@@ -1,5 +1,5 @@
-import { useEffect, type ReactNode, type ButtonHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, forwardRef } from 'react'
-import { BadgeCheck, Loader2, X } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode, type ButtonHTMLAttributes, type ImgHTMLAttributes, type InputHTMLAttributes, type SelectHTMLAttributes, type TextareaHTMLAttributes, forwardRef } from 'react'
+import { BadgeCheck, ImageOff, Loader2, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 /** Wordmark: “Jara” white + “Plug” red, with the supplied app-icon mark. Never regenerated per render. */
@@ -22,6 +22,43 @@ export function Spinner({ className = '' }: { className?: string }) {
   return <Loader2 className={`animate-spin ${className}`} size={18} aria-label="Loading" />
 }
 
+/** Circular ring that spins until whatever it covers has finished loading. */
+export function RingSpinner({ size = 32 }: { size?: number }) {
+  return (
+    <svg className="animate-spin text-red drop-shadow" width={size} height={size} viewBox="0 0 24 24" fill="none" role="status" aria-label="Loading image">
+      <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeOpacity="0.2" strokeWidth="2.5" />
+      <path d="M12 2.5a9.5 9.5 0 0 1 9.5 9.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+/**
+ * <img> with a spinning ring over it until it has loaded (or a broken-image icon if it fails).
+ * By default the ring is positioned against the nearest `relative` parent, so the img keeps its normal layout.
+ * Pass `box` when the image has no sized parent: it wraps the img and `box` is applied only while loading (give it a size).
+ */
+export function LoadImage({ src, className = '', box, ringSize = 32, alt = '', ...rest }: Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> & { src?: string | null; box?: string; ringSize?: number }) {
+  const [state, setState] = useState<{ src?: string | null; status: 'ok' | 'error' } | null>(null)
+  const ref = useRef<HTMLImageElement>(null)
+  const status = state && state.src === src ? state.status : null
+  // Cached images can finish before React attaches onLoad.
+  useEffect(() => {
+    const el = ref.current
+    if (el?.complete && el.naturalWidth > 0) setState({ src, status: 'ok' })
+  }, [src])
+  const loading = !status
+  const overlay = loading
+    ? <span className="pointer-events-none absolute inset-0 z-[1] grid place-items-center"><RingSpinner size={ringSize} /></span>
+    : status === 'error'
+      ? <span className="pointer-events-none absolute inset-0 z-[1] grid place-items-center text-muted"><ImageOff size={ringSize * 0.7} aria-label="Image failed to load" /></span>
+      : null
+  const img = src ? (
+    <img ref={ref} src={src} alt={alt} className={className} onLoad={() => setState({ src, status: 'ok' })} onError={() => setState({ src, status: 'error' })} {...rest} />
+  ) : null
+  if (box === undefined) return <>{img}{overlay}</>
+  return <span className={`relative block ${loading ? box : ''}`}>{img}{overlay}</span>
+}
+
 export const Skeleton = ({ className = '' }: { className?: string }) => <div className={`skeleton rounded-xl ${className}`} />
 
 const initials = (n: string) => n.split(/\s+/).map((s) => s[0]).join('').slice(0, 2).toUpperCase()
@@ -30,7 +67,7 @@ export function Avatar({ src, name, size = 44, online }: { src?: string | null; 
   return (
     <span className="relative inline-block shrink-0" style={{ width: size, height: size }}>
       {src ? (
-        <img src={src} alt="" className="h-full w-full rounded-full border border-line object-cover" draggable={false} />
+        <LoadImage src={src} className="h-full w-full rounded-full border border-line object-cover" draggable={false} ringSize={Math.max(14, Math.round(size * 0.5))} />
       ) : (
         <span className="grid h-full w-full place-items-center rounded-full border border-line bg-gradient-to-br from-[#3a0a14] to-[#140508] text-xs font-bold text-white/80" style={{ fontSize: size * 0.34 }}>
           {initials(name || '?')}

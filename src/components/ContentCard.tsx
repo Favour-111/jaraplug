@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import type { ContentItem } from '../lib/types'
 import { creditsLabel, duration, koboToCredits } from '../lib/format'
 import { useCreditUnit } from '../lib/auth'
-import { StatusPill } from './ui'
+import { LoadImage, StatusPill } from './ui'
 
 /** Locked thumbnails are blurred ON THE SERVER; the real file is never sent until entitlement is verified. */
 export function ContentCard({ c, onOpen, owner }: { c: ContentItem; onOpen?: (c: ContentItem) => void; owner?: boolean }) {
@@ -17,7 +17,7 @@ export function ContentCard({ c, onOpen, owner }: { c: ContentItem; onOpen?: (c:
   return (
     <div className="card overflow-hidden">
       <button onClick={click} className="group relative block aspect-[3/4] w-full overflow-hidden bg-[#1c1c1c] text-left" aria-label={c.locked ? `Unlock ${c.title}` : `Open ${c.title}`}>
-        {c.thumbnailUrl && <img src={c.thumbnailUrl} alt="" loading="lazy" draggable={false} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
+        {c.thumbnailUrl && <LoadImage src={c.thumbnailUrl} loading="lazy" draggable={false} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-black/10" />
         {c.locked ? (
           <div className="absolute inset-0 grid place-items-center"><span className="grid h-12 w-12 place-items-center rounded-full bg-black/55 text-amber-400 backdrop-blur"><Lock size={20} /></span></div>

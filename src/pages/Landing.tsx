@@ -6,7 +6,7 @@ import { api } from '../lib/api'
 import { useAuthState, useConfig, useMe } from '../lib/auth'
 import type { ProviderCardData } from '../lib/types'
 import { ProfileCard, ProfileCardSkeleton } from '../components/ProfileCard'
-import { EmptyState } from '../components/ui'
+import { EmptyState, LoadImage } from '../components/ui'
 import { pct } from '../lib/format'
 
 const faqs = [
@@ -52,8 +52,8 @@ export function Landing() {
               const pos = ['left-0 top-10 -rotate-6 z-10', 'left-1/2 top-0 -translate-x-1/2 z-20', 'right-0 top-16 rotate-6 z-10'][i]
               return (
                 <div key={i} className={`absolute w-44 overflow-hidden rounded-2xl border border-line shadow-card ${pos} ${i === 1 ? '!w-52' : ''}`}>
-                  <div className="aspect-[3/4] bg-gradient-to-br from-[#2a0a12] to-[#0d0305]">
-                    {p?.avatarUrl && <img src={p.avatarUrl} alt="" className="h-full w-full object-cover" draggable={false} />}
+                  <div className="relative aspect-[3/4] bg-gradient-to-br from-[#2a0a12] to-[#0d0305]">
+                    {p?.avatarUrl && <LoadImage src={p.avatarUrl} className="h-full w-full object-cover" draggable={false} />}
                   </div>
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 to-transparent p-3 pt-10 text-xs font-bold">{p ? `${p.displayName}${p.age ? ' ' + p.age : ''}` : ''}</div>
                 </div>

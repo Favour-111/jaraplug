@@ -6,7 +6,7 @@ import { api, ApiError, errMsg } from '../lib/api'
 import { queryClient, useAuthState, useCreditUnit, useMe } from '../lib/auth'
 import { useToast } from '../lib/toast'
 import type { ContentItem } from '../lib/types'
-import { Button, EmptyState, Skeleton, Spinner } from '../components/ui'
+import { Button, EmptyState, LoadImage, Skeleton, Spinner } from '../components/ui'
 import { ReportDialog } from '../components/Dialogs'
 import { creditsLabel, koboToCredits, naira } from '../lib/format'
 import { RETURN_KEY } from './Credits'
@@ -51,7 +51,7 @@ export function UnlockPage() {
     <div className="mx-auto max-w-md px-4 pb-12 pt-3">
       <div className="mb-4 flex items-center gap-3"><button onClick={() => nav(-1)} className="grid h-10 w-10 place-items-center rounded-full hover:bg-card" aria-label="Back"><ArrowLeft size={20} /></button><h1 className="text-lg font-bold">Unlock {c.mediaType === 'VIDEO' ? 'Video' : 'Photo'}</h1></div>
       <div className="relative aspect-video overflow-hidden rounded-2xl border border-line bg-[#1c1c1c]">
-        {c.thumbnailUrl && <img src={c.thumbnailUrl} alt="" className="h-full w-full object-cover" draggable={false} />}
+        {c.thumbnailUrl && <LoadImage src={c.thumbnailUrl} className="h-full w-full object-cover" draggable={false} />}
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 grid place-items-center"><Lock size={34} className="text-amber-400" /></div>
         {c.mediaType === 'VIDEO' && <span className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-black"><Play size={16} className="ml-0.5 fill-black" /></span>}
@@ -97,7 +97,7 @@ export function WatchPage() {
       {apiErr && !['PURCHASE_REQUIRED', 'AGE_VERIFICATION_REQUIRED', 'LOGIN_REQUIRED'].includes(apiErr.code ?? '') && <EmptyState icon={<XCircle />} title="Can't open this" text={apiErr.message} />}
       {data && (
         <div onContextMenu={(e) => e.preventDefault()} className="overflow-hidden rounded-2xl border border-line bg-black">
-          {data.mediaType === 'VIDEO' ? <video src={data.url} controls controlsList="nodownload noremoteplayback" disablePictureInPicture playsInline className="max-h-[75vh] w-full" /> : <img src={data.url} alt={meta?.title ?? ''} draggable={false} className="max-h-[80vh] w-full object-contain" />}
+          {data.mediaType === 'VIDEO' ? <video src={data.url} controls controlsList="nodownload noremoteplayback" disablePictureInPicture playsInline className="max-h-[75vh] w-full" /> : <LoadImage src={data.url} alt={meta?.title ?? ''} draggable={false} className="max-h-[80vh] w-full object-contain" box="h-72 w-full" />}
         </div>
       )}
       {meta && <div className="mt-4"><h1 className="text-xl font-bold">{meta.title}</h1><Link to={`/profile/${meta.provider.username}`} className="text-sm text-muted hover:text-white">by {meta.provider.displayName}</Link></div>}
