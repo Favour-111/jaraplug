@@ -82,8 +82,8 @@ export interface Conversation {
   lastMessageAt: string
 }
 export interface Message {
-  id: string; conversationId: string; senderId: string; messageType: 'TEXT' | 'IMAGE' | 'AUDIO'; body: string
-  attachmentUrl: string | null; durationSeconds: number | null; createdAt: string; deliveredAt: string | null; readAt: string | null
+  id: string; conversationId: string; senderId: string; messageType: 'TEXT' | 'IMAGE' | 'AUDIO' | 'VIDEO'; body: string
+  attachmentUrl: string | null; durationSeconds: number | null; viewOnce?: boolean; viewedAt?: string | null; createdAt: string; deliveredAt: string | null; readAt: string | null
 }
 
 export interface Booking {

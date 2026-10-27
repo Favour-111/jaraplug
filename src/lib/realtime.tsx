@@ -30,6 +30,10 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
       qc.invalidateQueries({ queryKey: ['messages', m.conversationId] })
       qc.invalidateQueries({ queryKey: ['me'] })
     })
+    s.on('message:viewed', (p: { conversationId: string }) => {
+      qc.invalidateQueries({ queryKey: ['messages', p.conversationId] })
+      qc.invalidateQueries({ queryKey: ['conversations'] })
+    })
     s.on('message:status', (p: { conversationId: string }) => qc.invalidateQueries({ queryKey: ['messages', p.conversationId] }))
     s.on('notification:new', (n: { title: string }) => {
       toast(n.title, 'info')

@@ -49,3 +49,8 @@ body {
 }
 
 .pb-safe { padding-bottom: max(env(safe-area-inset-bottom), 0px); }
+
+/* Deterrents against capturing pictures and chats (see lib/ScreenGuard.tsx). Not a guarantee: the OS can still capture the screen. */
+img, video { -webkit-user-drag: none; -webkit-touch-callout: none; user-select: none; }
+html.shielded img, html.shielded video, html.shielded .protect-blur { filter: blur(28px) brightness(0.55); }
+@media print { body { display: none !important; } }

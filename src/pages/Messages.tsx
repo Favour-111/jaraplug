@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Ban, Camera, Check, CheckCheck, Flag, ImagePlus, MessageCircle, Mic, MoreVertical, Pause, Play, Send, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Ban, Camera, Check, CheckCheck, Eye, EyeOff, Flag, ImagePlus, Lock, MessageCircle, Mic, MoreVertical, Pause, Play, Send, Trash2, X } from 'lucide-react'
 import { api, ApiError, errMsg, upload } from '../lib/api'
 import { useMe } from '../lib/auth'
 import { useRealtime } from '../lib/realtime'
@@ -18,7 +18,7 @@ export function MessagesPage({ base }: { base: string }) {
 
   return (
     <div className="md:grid md:h-[calc(100vh-8.5rem)] md:grid-cols-[340px_1fr] md:overflow-hidden md:rounded-2xl md:border md:border-line md:bg-surface/40">
-      <div className={`${conversationId ? 'hidden md:block' : ''} md:overflow-y-auto md:border-r md:border-line`}>
+      <div className={`protect-blur ${conversationId ? 'hidden md:block' : ''} md:overflow-y-auto md:border-r md:border-line`}>
         <div className="flex items-center justify-between pb-3 md:p-4"><h1 className="text-2xl font-bold tracking-tight">Messages</h1></div>
         {isLoading ? (
           <div className="space-y-2 md:px-3">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16" />)}</div>
@@ -49,6 +49,7 @@ export function MessagesPage({ base }: { base: string }) {
 
 const MAX_VOICE_SECONDS = 300
 const MAX_CHAT_IMAGE_BYTES = 5 * 1024 * 1024
+const MAX_CHAT_VIDEO_BYTES = 25 * 1024 * 1024
 const mmss = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 
 function VoicePlayer({ src, seconds }: { src: string; seconds: number | null }) {
@@ -128,6 +129,81 @@ function CameraModal({ open, onClose, onCapture }: { open: boolean; onClose: () 
   )
 }
 
+/** One claim per message, even if React runs the viewer's effect twice (StrictMode): a second request would be refused as "already opened". */
+const claims = new Map<string, Promise<{ url: string; messageType: 'IMAGE' | 'VIDEO' }>>()
+const claimOnce = (conversationId: string, messageId: string) => {
+  let p = claims.get(messageId)
+  if (!p) { p = api.post<{ url: string; messageType: 'IMAGE' | 'VIDEO' }>(`/conversations/${conversationId}/messages/${messageId}/view`); claims.set(messageId, p) }
+  return p
+}
+
+/** Faint repeating tag of whoever is viewing, so a leaked screenshot can be traced back to them. */
+const watermark = (text: string) => {
+  const safe = text.replace(/[<>&"']/g, '')
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='260' height='160'><text x='20' y='90' fill='white' fill-opacity='0.22' font-family='sans-serif' font-size='15' font-weight='700' transform='rotate(-24 130 80)'>${safe}</text></svg>`
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`
+}
+
+function ViewOnceViewer({ message, viewer, onClose }: { message: Message; viewer: string; onClose: () => void }) {
+  const [state, setState] = useState<{ status: 'loading' } | { status: 'error'; text: string } | { status: 'ready'; url: string; kind: 'IMAGE' | 'VIDEO' }>({ status: 'loading' })
+  const [hidden, setHidden] = useState(false)
+  const video = useRef<HTMLVideoElement>(null)
+  useEffect(() => {
+    let live = true
+    claimOnce(message.conversationId, message.id)
+      .then((r) => live && setState({ status: 'ready', url: r.url, kind: r.messageType }))
+      .catch((e) => live && setState({ status: 'error', text: e instanceof ApiError && e.status === 410 ? 'This was already opened and is no longer available.' : errMsg(e) }))
+    return () => { live = false }
+  }, [message.conversationId, message.id])
+  // Cover the picture whenever this window or tab is not in front (a common first step of capturing the screen).
+  useEffect(() => {
+    const check = () => { const away = document.hidden || !document.hasFocus(); setHidden(away); if (away) video.current?.pause() }
+    check()
+    window.addEventListener('blur', check); window.addEventListener('focus', check); document.addEventListener('visibilitychange', check)
+    return () => { window.removeEventListener('blur', check); window.removeEventListener('focus', check); document.removeEventListener('visibilitychange', check) }
+  }, [])
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', onKey)
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev }
+  }, [onClose])
+  return (
+    <div className="fixed inset-0 z-[70] flex flex-col bg-black select-none" role="dialog" aria-modal="true" aria-label="View once" onContextMenu={(e) => e.preventDefault()}>
+      <div className="flex items-center justify-between px-4 py-3">
+        <p className="flex items-center gap-2 text-sm text-white/80"><Lock size={15} className="text-red" /> View once · disappears when you close this</p>
+        <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Close"><X size={18} /></button>
+      </div>
+      <div className="relative grid min-h-0 flex-1 place-items-center overflow-hidden">
+        {state.status === 'loading' && <Spinner className="text-red" />}
+        {state.status === 'error' && <p className="px-8 text-center text-sm text-white/70">{state.text}</p>}
+        {state.status === 'ready' && (
+          <>
+            {state.kind === 'VIDEO'
+              ? <video ref={video} src={state.url} autoPlay playsInline controls controlsList="nodownload noremoteplayback nofullscreen" disablePictureInPicture disableRemotePlayback onContextMenu={(e) => e.preventDefault()} className="max-h-full max-w-full" />
+              : <img src={state.url} alt="" draggable={false} className="pointer-events-none max-h-full max-w-full object-contain" />}
+            <div className="pointer-events-none absolute inset-0" style={{ backgroundImage: watermark(viewer) }} />
+            {hidden && <div className="absolute inset-0 z-10 grid place-items-center bg-black text-sm text-white/60">Hidden while this window is not in front</div>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ViewOnceBubble({ m, mine, onOpen }: { m: Message; mine: boolean; onOpen: () => void }) {
+  const what = m.messageType === 'VIDEO' ? 'Video' : 'Photo'
+  if (mine) return <p className="mb-1 flex items-center gap-2 text-sm"><Lock size={15} /> {what} · View once <span className="text-white/70">· {m.viewedAt ? 'Opened' : 'Not opened yet'}</span></p>
+  if (m.viewedAt) return <p className="mb-1 flex items-center gap-2 text-sm text-muted"><EyeOff size={15} /> {what} · Opened</p>
+  return (
+    <button onClick={onOpen} className="mb-1 flex items-center gap-3 rounded-xl bg-white/5 py-1.5 pl-1.5 pr-4 text-left transition hover:bg-white/10">
+      <span className="grid h-10 w-10 place-items-center rounded-full bg-red/90"><Eye size={19} /></span>
+      <span><span className="block text-sm font-semibold">{what}</span><span className="block text-[11px] text-muted">Tap to view · can only be opened once</span></span>
+    </button>
+  )
+}
+
 function Ticks({ m }: { m: Message }) {
   if (m.readAt) return <CheckCheck size={14} className="text-white" aria-label="Read" />
   if (m.deliveredAt) return <CheckCheck size={14} className="text-white/60" aria-label="Delivered" />
@@ -146,7 +222,9 @@ function Thread({ id, base }: { id: string; base: string }) {
   const [report, setReport] = useState(false)
   const [block, setBlock] = useState(false)
   const [preview, setPreview] = useState<string | null>(null)
-  const [pendingImage, setPendingImage] = useState<{ file: File; url: string } | null>(null)
+  const [pendingImage, setPendingImage] = useState<{ file: File; url: string; kind: 'image' | 'video' } | null>(null)
+  const [viewOnce, setViewOnce] = useState(false)
+  const [viewing, setViewing] = useState<Message | null>(null)
   const [recording, setRecording] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const rec = useRef<{ mr: MediaRecorder; startedAt: number; cancelled: boolean } | null>(null)
@@ -193,12 +271,13 @@ function Thread({ id, base }: { id: string; base: string }) {
   const afterSent = () => { qc.invalidateQueries({ queryKey: ['messages', id] }); qc.invalidateQueries({ queryKey: ['conversations'] }) }
   const failed = (e: unknown) => { toast(errMsg(e), 'error'); qc.invalidateQueries({ queryKey: ['conversations'] }) }
 
-  const clearPendingImage = () => setPendingImage((p) => { if (p) URL.revokeObjectURL(p.url); return null })
+  const clearPendingImage = () => { setViewOnce(false); setPendingImage((p) => { if (p) URL.revokeObjectURL(p.url); return null }) }
   const pickImage = (f: File) => {
-    if (!/^image\/(jpeg|png|webp)$/.test(f.type)) return toast('Choose a JPG, PNG or WebP image', 'error')
-    if (f.size > MAX_CHAT_IMAGE_BYTES) return toast('Chat images must be under 5MB', 'error')
+    const video = /^video\/(mp4|quicktime|webm)$/.test(f.type)
+    if (!video && !/^image\/(jpeg|png|webp)$/.test(f.type)) return toast('Choose a JPG, PNG or WebP photo, or an MP4, MOV or WebM video', 'error')
+    if (video ? f.size > MAX_CHAT_VIDEO_BYTES : f.size > MAX_CHAT_IMAGE_BYTES) return toast(video ? 'Chat videos must be under 25MB' : 'Chat images must be under 5MB', 'error')
     clearPendingImage()
-    setPendingImage({ file: f, url: URL.createObjectURL(f) })
+    setPendingImage({ file: f, url: URL.createObjectURL(f), kind: video ? 'video' : 'image' })
   }
   useEffect(() => () => { if (pendingImage) URL.revokeObjectURL(pendingImage.url) }, [pendingImage])
   // Phones open the native camera app; computers use the in-browser camera.
@@ -211,8 +290,8 @@ function Thread({ id, base }: { id: string; base: string }) {
     try {
       if (pendingImage) {
         // The picked photo only goes out now, with whatever is typed as its caption.
-        bumpConversation('📷 Photo')
-        const fd = new FormData(); fd.append('file', pendingImage.file); if (body) fd.append('caption', body)
+        bumpConversation(viewOnce ? (pendingImage.kind === 'video' ? '🔒 View once video' : '🔒 View once photo') : pendingImage.kind === 'video' ? '🎥 Video' : '📷 Photo')
+        const fd = new FormData(); fd.append('file', pendingImage.file); if (body) fd.append('caption', body); if (viewOnce) fd.append('viewOnce', 'true')
         await upload(`/conversations/${id}/attachments`, fd)
         clearPendingImage()
       } else {
@@ -304,7 +383,7 @@ function Thread({ id, base }: { id: string; base: string }) {
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 md:px-5">
+      <div className="protect-blur min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 md:px-5">
         {q.hasNextPage && <div className="text-center"><button className="btn-ghost btn-sm" onClick={() => q.fetchNextPage()} disabled={q.isFetchingNextPage}>{q.isFetchingNextPage ? <Spinner /> : 'Load earlier messages'}</button></div>}
         {q.isLoading && <div className="space-y-3"><Skeleton className="h-10 w-2/3" /><Skeleton className="ml-auto h-10 w-1/2" /><Skeleton className="h-10 w-3/5" /></div>}
         {!q.isLoading && messages.length === 0 && <p className="py-10 text-center text-sm text-muted">No messages yet. Say hello 👋</p>}
@@ -317,7 +396,9 @@ function Thread({ id, base }: { id: string; base: string }) {
               {showDay && <p className="my-3 text-center text-[11px] text-muted">{new Date(m.createdAt).toLocaleDateString('en-NG', { weekday: 'long', day: 'numeric', month: 'short' })}</p>}
               <div className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-[15px] leading-snug ${mine ? 'rounded-br-md bg-gradient-to-b from-red to-red-dark' : 'rounded-bl-md bg-[#232323]'}`}>
-                  {m.messageType === 'IMAGE' && <button onClick={() => m.attachmentUrl && setPreview(m.attachmentUrl)} className="mb-1 block overflow-hidden rounded-xl"><LoadImage src={m.attachmentUrl} alt="Shared" className="max-h-60 w-full object-cover" box="h-48 w-56 max-w-full bg-black/25" draggable={false} /></button>}
+                  {(m.messageType === 'IMAGE' || m.messageType === 'VIDEO') && m.viewOnce && <ViewOnceBubble m={m} mine={mine} onOpen={() => setViewing(m)} />}
+                  {m.messageType === 'IMAGE' && !m.viewOnce && <button onClick={() => m.attachmentUrl && setPreview(m.attachmentUrl)} className="mb-1 block overflow-hidden rounded-xl"><LoadImage src={m.attachmentUrl} alt="Shared" className="max-h-60 w-full object-cover" box="h-48 w-56 max-w-full bg-black/25" draggable={false} /></button>}
+                  {m.messageType === 'VIDEO' && !m.viewOnce && (m.attachmentUrl ? <video src={m.attachmentUrl} controls controlsList="nodownload noremoteplayback" disablePictureInPicture playsInline preload="metadata" onContextMenu={(e) => e.preventDefault()} className="mb-1 max-h-60 w-full rounded-xl bg-black" /> : <div className="mb-1 grid h-32 w-56 max-w-full place-items-center rounded-xl bg-black/25"><Spinner className="text-red" /></div>)}
                   {m.messageType === 'AUDIO' && m.attachmentUrl && <VoicePlayer src={m.attachmentUrl} seconds={m.durationSeconds} />}
                   {m.body && <p className="whitespace-pre-wrap break-words">{m.body}</p>}
                   <p className={`mt-1 flex items-center gap-1 text-[10px] ${mine ? 'justify-end text-white/70' : 'text-muted'}`}>{timeOnly(m.createdAt)}{mine && <Ticks m={m} />}</p>
@@ -348,22 +429,27 @@ function Thread({ id, base }: { id: string; base: string }) {
             <>
               {pendingImage && (
                 <div className="mb-3 flex items-center gap-3 rounded-xl border border-line bg-card p-2">
-                  <img src={pendingImage.url} alt="Selected" className="h-16 w-16 rounded-lg object-cover" />
-                  <p className="min-w-0 flex-1 truncate text-sm text-muted">{pendingImage.file.name}<span className="block text-xs">Add a caption if you like, then press send</span></p>
+                  {pendingImage.kind === 'video' ? <video src={pendingImage.url} muted playsInline className="h-16 w-16 rounded-lg object-cover" /> : <img src={pendingImage.url} alt="Selected" className="h-16 w-16 rounded-lg object-cover" />}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-muted">{pendingImage.file.name}</p>
+                    <button type="button" onClick={() => setViewOnce((v) => !v)} aria-pressed={viewOnce} className={`mt-1 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition ${viewOnce ? 'border-red bg-red/15 text-red' : 'border-line text-muted hover:text-white'}`}>
+                      {viewOnce ? <Lock size={12} /> : <Eye size={12} />} {viewOnce ? 'View once: on' : 'View once: off'}
+                    </button>
+                  </div>
                   <button type="button" onClick={clearPendingImage} className="grid h-8 w-8 place-items-center rounded-full hover:bg-surface" aria-label="Remove photo"><X size={16} /></button>
                 </div>
               )}
               <div className="flex items-end gap-2">
-                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) pickImage(f.size > 4 * 1024 * 1024 ? await shrinkPhoto(f) : f) }} />
+                <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) pickImage(f.type.startsWith('image/') && f.size > 4 * 1024 * 1024 ? await shrinkPhoto(f) : f) }} />
                 <input ref={camRef} type="file" accept="image/*" capture="environment" hidden onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) pickImage(await shrinkPhoto(f)) }} />
                 <div className="relative shrink-0">
-                  <button type="button" onClick={() => setAttachMenu((m) => !m)} disabled={sending} className="grid h-10 w-10 place-items-center rounded-full border border-line bg-card text-muted hover:text-white" aria-label="Attach a photo" aria-expanded={attachMenu}><ImagePlus size={19} /></button>
+                  <button type="button" onClick={() => setAttachMenu((m) => !m)} disabled={sending} className="grid h-10 w-10 place-items-center rounded-full border border-line bg-card text-muted hover:text-white" aria-label="Attach a photo or video" aria-expanded={attachMenu}><ImagePlus size={19} /></button>
                   {attachMenu && (
                     <>
                       <div className="fixed inset-0 z-30" onClick={() => setAttachMenu(false)} />
                       <div className="absolute bottom-12 left-0 z-40 w-48 animate-pop overflow-hidden rounded-xl border border-line bg-surface py-1 text-sm shadow-card">
                         <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-card" onClick={takePhoto}><Camera size={16} className="text-red" /> Take a photo</button>
-                        <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-card" onClick={() => { setAttachMenu(false); fileRef.current?.click() }}><ImagePlus size={16} className="text-red" /> Choose from gallery</button>
+                        <button type="button" className="flex w-full items-center gap-2.5 px-4 py-2.5 hover:bg-card" onClick={() => { setAttachMenu(false); fileRef.current?.click() }}><ImagePlus size={16} className="text-red" /> Photo or video</button>
                       </div>
                     </>
                   )}
@@ -381,6 +467,7 @@ function Thread({ id, base }: { id: string; base: string }) {
       )}
 
       <CameraModal open={cameraOpen} onClose={() => setCameraOpen(false)} onCapture={(f) => pickImage(f)} />
+      {viewing && <ViewOnceViewer message={viewing} viewer={`@${me?.username ?? me?.displayName ?? 'viewer'}`} onClose={() => { setViewing(null); qc.invalidateQueries({ queryKey: ['messages', id] }); qc.invalidateQueries({ queryKey: ['conversations'] }) }} />}
       <Modal open={!!preview} onClose={() => setPreview(null)} wide>{preview && <LoadImage src={preview} className="max-h-[70vh] w-full rounded-xl object-contain" box="h-64 w-full" ringSize={44} />}</Modal>
       {other && <ReportDialog open={report} onClose={() => setReport(false)} reportedUserId={other.id} label={`Report ${other.displayName}`} />}
       {other && <BlockDialog open={block} onClose={() => setBlock(false)} userId={other.id} name={other.displayName} onDone={() => { qc.invalidateQueries({ queryKey: ['conversations'] }); nav(base) }} />}

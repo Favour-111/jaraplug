@@ -8,6 +8,7 @@ import { AuthProvider, queryClient } from './lib/auth'
 import { ToastProvider } from './lib/toast'
 import { RealtimeProvider } from './lib/realtime'
 import { ChatCacheSync } from './lib/ChatCacheSync'
+import { ScreenGuard } from './lib/ScreenGuard'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -15,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
           <AuthProvider>
+            <ScreenGuard />
             <ChatCacheSync />
             <RealtimeProvider>
               <App />
