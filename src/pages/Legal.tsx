@@ -138,6 +138,7 @@ export const Privacy = () => (
         <li><strong>Payments and credits</strong> — your credit balance and history, and payment references and amounts. Card and bank details used to buy credits are handled by Paystack; <strong>we never see or store your card number</strong>.</li>
         <li><strong>Provider payout details</strong> — for providers who withdraw: bank name, account number and account name, used only to pay out your earnings.</li>
         <li><strong>Technical information</strong> — device and browser type, IP address, log and security events (for example failed sign-in or rate-limit events), and the approximate time of activity such as when you were last online.</li>
+        <li><strong>Visit counts</strong> — to see how many people use the site we count visits using a daily-changing, one-way scrambled code made from your IP address and browser. It cannot be reversed or used to follow you from one day to the next, and no cookies are used.</li>
       </ul>
       <p>We do not ask for, and do not store, copies of identity documents.</p></section>
 

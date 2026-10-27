@@ -26,6 +26,7 @@ import { EarningsPage } from './pages/provider/Earnings'
 import { AdminAudit, AdminContent, AdminReferrals, AdminOverview, AdminReports, AdminSupport, AdminTransactions, AdminUsers, AdminVerifications } from './pages/admin/Admin'
 import { EmptyState } from './components/ui'
 import { Link } from 'react-router-dom'
+import { API_BASE } from './lib/api'
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -45,9 +46,24 @@ function ReferralCapture() {
   return null
 }
 
+/** Anonymous visit counter: one tiny request per page view, no cookies or ids kept on the device. Admin screens are not counted. */
+let lastTracked = { path: '', at: 0 }
+function VisitTracker() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) return
+    const now = Date.now()
+    if (lastTracked.path === pathname && now - lastTracked.at < 2000) return // React StrictMode runs effects twice in dev
+    lastTracked = { path: pathname, at: now }
+    fetch(`${API_BASE}/api/track`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}', keepalive: true }).catch(() => {})
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <>
+      <VisitTracker />
       <ReferralCapture />
       <ScrollTop />
       <Routes>

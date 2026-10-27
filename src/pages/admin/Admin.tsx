@@ -25,6 +25,30 @@ function ReasonDialog({ open, title, confirmLabel, danger, onClose, onConfirm, b
   )
 }
 
+function VisitorStats() {
+  const { data } = useQuery({ queryKey: ['admin', 'visitors'], queryFn: () => api.get<{ today: number; yesterday: number; last7: number; last30: number; viewsToday: number; views30: number; series: { day: string; visitors: number; views: number }[] }>('/admin/visitors'), refetchInterval: 60_000 })
+  if (!data) return <Skeleton className="mt-8 h-56" />
+  const max = Math.max(1, ...data.series.map((d) => d.visitors))
+  return (
+    <>
+      <h2 className="mb-3 mt-8 text-lg font-bold">Site visitors</h2>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <Stat label="Visitors today" value={data.today} hint={`Yesterday ${data.yesterday}`} accent />
+        <Stat label="Last 7 days" value={data.last7} />
+        <Stat label="Last 30 days" value={data.last30} />
+        <Stat label="Page views (30 days)" value={data.views30} hint={`${data.viewsToday} today`} />
+      </div>
+      <div className="card mt-3 p-4">
+        <div className="flex h-32 items-end gap-1" role="img" aria-label="Visitors per day, last 30 days">
+          {data.series.map((d) => <div key={d.day} title={`${d.day}: ${d.visitors} visitor${d.visitors === 1 ? '' : 's'}, ${d.views} page view${d.views === 1 ? '' : 's'}`} className="flex-1 rounded-t bg-red/80 hover:bg-red" style={{ height: `${Math.max(d.visitors ? 4 : 1, (d.visitors / max) * 100)}%`, opacity: d.visitors ? 1 : 0.25 }} />)}
+        </div>
+        <div className="mt-2 flex justify-between text-[11px] text-muted"><span>{data.series[0]?.day}</span><span>Today</span></div>
+        <p className="mt-3 text-[11px] text-muted">Each person is counted once per day (Lagos time). Totals add up daily visitors, so someone who returns on three days counts three times. Bots are excluded and no IP addresses or cookies are stored.</p>
+      </div>
+    </>
+  )
+}
+
 export function AdminOverview() {
   const { data, isLoading } = useQuery({ queryKey: ['admin', 'overview'], queryFn: () => api.get<any>('/admin/overview'), refetchInterval: 30_000 })
   if (isLoading || !data) return <div className="grid grid-cols-2 gap-3 md:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-24" />)}</div>
@@ -34,6 +58,7 @@ export function AdminOverview() {
       <PageHeader title="Admin overview" />
       {data.priorityReports > 0 && <Link to="/admin/reports" className="mb-4 flex items-center gap-3 rounded-2xl border border-red/40 bg-red-soft p-4"><ShieldAlert className="text-red" /><span className="flex-1 text-sm"><strong>{data.priorityReports} priority safety report{data.priorityReports > 1 ? 's' : ''}</strong> need prompt review.</span></Link>}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4"><Stat label="Active users" value={data.users} /><Stat label="Providers" value={data.providers} /><Stat label="Successful payments" value={data.transactions.count} /><Stat label="Platform revenue" value={naira(data.transactions.platformRevenue)} accent hint={`Gross ${naira(data.transactions.gross)}`} /></div>
+      <VisitorStats />
       <h2 className="mb-3 mt-8 text-lg font-bold">Queues</h2>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{q.map(([l, n, to]) => <Link key={l} to={to} className="card flex items-center justify-between p-4 transition hover:border-red/50"><span className="text-sm">{l}</span><span className={`grid h-8 min-w-8 place-items-center rounded-full px-2 text-sm font-bold ${n ? 'bg-red text-white' : 'bg-surface text-muted'}`}>{n}</span></Link>)}</div>
     </div>
