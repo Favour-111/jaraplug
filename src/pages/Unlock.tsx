@@ -10,6 +10,7 @@ import { Button, EmptyState, LoadImage, Skeleton, Spinner } from '../components/
 import { ReportDialog } from '../components/Dialogs'
 import { creditsLabel, koboToCredits, naira } from '../lib/format'
 import { RETURN_KEY } from './Credits'
+import { useSeo } from '../lib/seo'
 
 type Detail = ContentItem & { provider: { username: string; displayName: string } }
 
@@ -20,6 +21,7 @@ export function UnlockPage() {
   const { status } = useAuthState()
   const { me } = useMe()
   const { data: c, isLoading, error } = useQuery({ queryKey: ['content', id, status], queryFn: () => api.get<Detail>(`/content/${id}`), retry: false })
+  useSeo({ title: 'Unlock content | JaraPlug', noindex: true })
 
   const unit = useCreditUnit()
   const cost = c ? koboToCredits(c.price, unit) : 0
@@ -51,7 +53,7 @@ export function UnlockPage() {
     <div className="mx-auto max-w-md px-4 pb-12 pt-3">
       <div className="mb-4 flex items-center gap-3"><button onClick={() => nav(-1)} className="grid h-10 w-10 place-items-center rounded-full hover:bg-card" aria-label="Back"><ArrowLeft size={20} /></button><h1 className="text-lg font-bold">Unlock {c.mediaType === 'VIDEO' ? 'Video' : 'Photo'}</h1></div>
       <div className="relative aspect-video overflow-hidden rounded-2xl border border-line bg-[#1c1c1c]">
-        {c.thumbnailUrl && <LoadImage src={c.thumbnailUrl} className="h-full w-full object-cover" draggable={false} />}
+        {c.thumbnailUrl && <LoadImage src={c.thumbnailUrl} alt={c.title} className="h-full w-full object-cover" draggable={false} />}
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 grid place-items-center"><Lock size={34} className="text-amber-400" /></div>
         {c.mediaType === 'VIDEO' && <span className="absolute bottom-3 right-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-black"><Play size={16} className="ml-0.5 fill-black" /></span>}
@@ -88,6 +90,7 @@ export function WatchPage() {
     refetchInterval: 10 * 60 * 1000, staleTime: 5 * 60 * 1000,
   })
   const apiErr = error as ApiError | null
+  useSeo({ title: 'JaraPlug', noindex: true }) // private, short-lived media links
   if (apiErr && ['PURCHASE_REQUIRED', 'AGE_VERIFICATION_REQUIRED', 'LOGIN_REQUIRED'].includes(apiErr.code ?? '')) return <Navigate to={`/unlock/${id}`} replace />
 
   return (

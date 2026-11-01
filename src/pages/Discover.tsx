@@ -5,6 +5,7 @@ import { Compass, Search, SlidersHorizontal, X } from 'lucide-react'
 import { api } from '../lib/api'
 import { useAuthState, useConfig } from '../lib/auth'
 import type { ProviderCardData } from '../lib/types'
+import { useSeo } from '../lib/seo'
 import { ProfileCard, ProfileCardSkeleton } from '../components/ProfileCard'
 import { Button, EmptyState, ErrorState, Modal, Select, Field } from '../components/ui'
 
@@ -95,5 +96,12 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
   )
 }
 
-export const PublicDiscover = () => <div className="mx-auto max-w-6xl px-4 py-8"><DiscoverView publicMode /></div>
+export function PublicDiscover() {
+  useSeo({
+    title: 'Discover Verified Profiles in Lagos | JaraPlug',
+    description: 'Browse identity- and age-verified profiles on JaraPlug. Filter by city and availability, then connect privately. Adults only (18+).',
+    path: '/discover',
+  })
+  return <div className="mx-auto max-w-6xl px-4 py-8"><DiscoverView publicMode /></div>
+}
 export const ClientDiscover = () => <DiscoverView />

@@ -56,6 +56,8 @@ export interface ProviderProfileData extends ProviderCardData {
   biography: string
   content: ContentItem[]
   isSelf: boolean
+  /** Public + verified + not a demo account: the page may be indexed by search engines. */
+  indexable?: boolean
 }
 
 export interface AppConfig {

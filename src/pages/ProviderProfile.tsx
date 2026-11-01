@@ -9,6 +9,8 @@ import { ContentCard } from '../components/ContentCard'
 import { BlockDialog, ReportDialog } from '../components/Dialogs'
 import { Button, DemoChip, EmptyState, LoadImage, OnlineDot, Skeleton, Tabs, VerifiedBadge } from '../components/ui'
 import { useToast } from '../lib/toast'
+import { useSeo } from '../lib/seo'
+import { profileSeo } from '../lib/seoText'
 
 type Tab = 'about' | 'photos' | 'videos'
 
@@ -41,7 +43,18 @@ export function ProviderProfilePage() {
     onError: (e) => { if (e instanceof ApiError && e.code === 'AGE_VERIFICATION_REQUIRED') nav('/verify'); else toast(errMsg(e), 'error') },
   })
 
-  const needLogin = () => nav('/login', { state: { from: `/profile/${username}` } })
+  const meta = p ? profileSeo(p) : null
+  useSeo(
+    meta
+      ? meta.indexable
+        ? { title: meta.title, description: meta.description, path: meta.path, jsonLd: meta.jsonLd }
+        : { title: meta.title, description: meta.description, noindex: true } // owner hasn't opted in, not public, or owner/admin view
+      : error
+        ? { title: 'Profile not found | JaraPlug', noindex: true }
+        : { title: `@${username} | JaraPlug` },
+  )
+
+  const needLogin =() => nav('/login', { state: { from: `/profile/${username}` } })
   const isClient = me?.role === 'CLIENT'
   const onMessage = () => (status !== 'signedIn' ? needLogin() : !isClient ? toast('Only client accounts can start conversations', 'info') : message.mutate())
   const onBook = () => (status !== 'signedIn' ? needLogin() : !isClient ? toast('Only client accounts can request bookings', 'info') : nav(`/book/${username}`))
@@ -100,7 +113,7 @@ export function ProviderProfilePage() {
 
         {gallery.length > 0 && (
           <div className="mt-5 grid grid-cols-4 gap-2">
-            {gallery.slice(0, 3).map((c) => <button key={c.id} onClick={() => setTab('photos')} className="relative aspect-square overflow-hidden rounded-xl border border-line"><LoadImage src={c.url ?? c.thumbnailUrl} className="h-full w-full object-cover" draggable={false} ringSize={24} /></button>)}
+            {gallery.slice(0, 3).map((c) => <button key={c.id} onClick={() => setTab('photos')} aria-label="View photos" className="relative aspect-square overflow-hidden rounded-xl border border-line"><LoadImage src={c.url ?? c.thumbnailUrl} alt={c.title} className="h-full w-full object-cover" draggable={false} ringSize={24} /></button>)}
             {gallery.length > 3 && <button onClick={() => setTab('photos')} className="grid aspect-square place-items-center rounded-xl border border-line bg-card text-sm font-semibold">+{gallery.length - 3}</button>}
           </div>
         )}

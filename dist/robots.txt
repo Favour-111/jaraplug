@@ -1,0 +1,11 @@
+# JaraPlug — https://www.jara-plug.com
+#
+# Nothing is blocked here on purpose. Private areas (/app, /provider, /admin, /login, /checkout, …) must stay crawlable
+# so search engines can read their "X-Robots-Tag: noindex" header (vercel.json) and meta robots tag. A robots.txt
+# Disallow would hide that noindex and could still let the bare URL be indexed. Private data itself is protected by
+# sign-in and by the API's permission checks, not by this file.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://www.jara-plug.com/sitemap.xml

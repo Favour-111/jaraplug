@@ -1,11 +1,13 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect, type ReactNode } from 'react'
 import { SUPPORT_EMAIL } from '../lib/format'
+import { snippet, useSeo } from '../lib/seo'
 
 const UPDATED = '25 October 2026'
 
 function Doc({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
-  const { hash } = useLocation()
+  const { hash, pathname } = useLocation()
+  useSeo({ title: `${title} | JaraPlug`, description: snippet(intro), path: pathname })
   useEffect(() => { if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: 'smooth' }) }, [hash])
   return (
     <article className="mx-auto max-w-3xl px-4 py-12">

@@ -10,7 +10,7 @@ import { Avatar, Button, Field, Input, PageHeader, Segmented, Select, Skeleton, 
 interface Prof {
   username: string; displayName: string; biography: string; city: string; area: string | null; displayAge: number | null
   visibility: 'PUBLIC' | 'MEMBERS_ONLY' | 'HIDDEN'; availabilityStatus: 'AVAILABLE_NOW' | 'BY_APPOINTMENT' | 'OFFLINE'
-  publicFields: { age: boolean; area: boolean }; verificationStatus: string; consentConfirmed: boolean; profileImageUrl: string | null
+  publicFields: { age: boolean; area: boolean }; searchIndexingEnabled: boolean; verificationStatus: string; consentConfirmed: boolean; profileImageUrl: string | null
 }
 
 export function ProviderProfileEditor() {
@@ -26,7 +26,7 @@ export function ProviderProfileEditor() {
   const refresh = () => { qc.invalidateQueries({ queryKey: ['provider-profile'] }); qc.invalidateQueries({ queryKey: ['me'] }); qc.invalidateQueries({ queryKey: ['provider-overview'] }) }
 
   const save = useMutation({
-    mutationFn: () => api.put('/provider/profile', { displayName: f!.displayName, biography: f!.biography, city: f!.city, area: f!.area || null, displayAge: f!.displayAge, visibility: f!.visibility, availabilityStatus: f!.availabilityStatus, publicFields: f!.publicFields, consentConfirmed: f!.consentConfirmed }),
+    mutationFn: () => api.put('/provider/profile', { displayName: f!.displayName, biography: f!.biography, city: f!.city, area: f!.area || null, displayAge: f!.displayAge, visibility: f!.visibility, availabilityStatus: f!.availabilityStatus, publicFields: f!.publicFields, searchIndexingEnabled: f!.visibility === 'PUBLIC' && f!.searchIndexingEnabled, consentConfirmed: f!.consentConfirmed }),
     onSuccess: () => { refresh(); toast('Profile saved', 'success') }, onError: (e) => toast(errMsg(e), 'error'),
   })
   const photo = useMutation({
@@ -76,7 +76,15 @@ export function ProviderProfileEditor() {
 
       <section className="card space-y-4 p-5">
         <h2 className="font-semibold">Visibility & privacy</h2>
-        <div><p className="label">Who can find your profile</p><Segmented value={f.visibility} onChange={(v) => set({ visibility: v })} options={[{ key: 'PUBLIC', label: 'Public' }, { key: 'MEMBERS_ONLY', label: 'Members' }, { key: 'HIDDEN', label: 'Hidden' }]} /></div>
+        <div><p className="label">Who can find your profile</p><Segmented value={f.visibility} onChange={(v) => set({ visibility: v })} options={[{ key: 'PUBLIC', label: 'Public' }, { key: 'MEMBERS_ONLY', label: 'Members' }, { key: 'HIDDEN', label: 'Hidden' }]} />
+          <p className="mt-2 text-xs text-muted">{f.visibility === 'PUBLIC' ? 'Anyone can view your profile on JaraPlug.' : f.visibility === 'MEMBERS_ONLY' ? 'Only signed-in, age-verified members can view your profile.' : 'Your profile is not shown to anyone.'}</p></div>
+        <label className="flex items-start justify-between gap-4 text-sm">
+          <span><span className="font-medium">Allow search engines to discover my profile</span>
+            <span className="mt-1 block text-xs text-muted">
+              {f.visibility !== 'PUBLIC' ? 'Only available when your profile is Public.' : 'Lets Google and other search engines list your profile and show its photo in link previews. They can take days or weeks to add or remove it.'}
+            </span></span>
+          <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-[#FF1744] disabled:opacity-40" disabled={f.visibility !== 'PUBLIC'} checked={f.visibility === 'PUBLIC' && f.searchIndexingEnabled} onChange={(e) => set({ searchIndexingEnabled: e.target.checked })} />
+        </label>
         <div><p className="label">Availability</p><Segmented value={f.availabilityStatus} onChange={(v) => set({ availabilityStatus: v })} options={[{ key: 'AVAILABLE_NOW', label: 'Available now' }, { key: 'BY_APPOINTMENT', label: 'By appt.' }, { key: 'OFFLINE', label: 'Offline' }]} /></div>
         <div><p className="label">Show on my public profile</p>
           {(['age', 'area'] as const).map((k) => <label key={k} className="flex items-center justify-between border-b border-line py-2.5 text-sm last:border-0"><span className="capitalize">{k}</span><input type="checkbox" className="h-5 w-5 accent-[#FF1744]" checked={f.publicFields[k]} onChange={(e) => set({ publicFields: { ...f.publicFields, [k]: e.target.checked } })} /></label>)}

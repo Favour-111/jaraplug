@@ -7,6 +7,7 @@ import { queryClient, roleHome, USING_CLERK, useAuthState, useMe } from '../lib/
 import { Logo, Skeleton, Spinner } from '../components/ui'
 import { useToast } from '../lib/toast'
 import { FullPageSpinner } from '../lib/guards'
+import { useSeo } from '../lib/seo'
 
 const ClerkForms = lazy(() => import('../lib/ClerkForms'))
 
@@ -56,6 +57,7 @@ function DevLogin({ mode }: { mode: 'login' | 'register' }) {
 export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const { status } = useAuthState()
   const { me } = useMe()
+  useSeo({ title: mode === 'register' ? 'Create an account | JaraPlug' : 'Log in | JaraPlug', noindex: true })
   if (status === 'signedIn' && me) return <Navigate to={me.onboarded ? roleHome(me.role) : '/onboarding'} replace />
   return (
     <div className="glow-top relative flex min-h-screen flex-col items-center px-4 py-10">

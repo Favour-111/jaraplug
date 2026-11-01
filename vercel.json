@@ -1,3 +1,23 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://jaraplugserver.onrender.com/api/sitemap.xml" },
+    {
+      "source": "/profile/:username",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|meta-externalagent|Twitterbot|WhatsApp|TelegramBot|LinkedInBot|Slackbot|Discordbot|Pinterest|redditbot|SkypeUriPreview|Snapchat|Viber|vkShare|Embedly|Iframely).*"
+        }
+      ],
+      "destination": "/api/profile-meta?username=:username"
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(app|provider|admin|login|register|onboarding|verify|go|checkout|book|unlock|watch)(/.*)?",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
+    }
+  ]
 }

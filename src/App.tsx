@@ -27,6 +27,7 @@ import { AdminAudit, AdminContent, AdminReferrals, AdminOverview, AdminReports, 
 import { EmptyState } from './components/ui'
 import { Link } from 'react-router-dom'
 import { API_BASE } from './lib/api'
+import { useSeo } from './lib/seo'
 
 function ScrollTop() {
   const { pathname } = useLocation()
@@ -34,7 +35,10 @@ function ScrollTop() {
   return null
 }
 
-const NotFound = () => <div className="mx-auto max-w-md px-4 py-24"><EmptyState title="Page not found" text="That page doesn't exist." action={<Link to="/" className="btn-primary">Back home</Link>} /></div>
+function NotFound() {
+  useSeo({ title: 'Page not found | JaraPlug', noindex: true }) // the SPA answers 200 for every path, so mark misses to avoid soft 404s
+  return <div className="mx-auto max-w-md px-4 py-24"><EmptyState title="Page not found" text="That page doesn't exist." action={<Link to="/" className="btn-primary">Back home</Link>} /></div>
+}
 
 /** Remembers a referral code from any link like /?ref=ABCD2345 until the visitor finishes signing up. */
 function ReferralCapture() {
