@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/sitemap.xml", "destination": "https://jaraplugserver.onrender.com/api/sitemap.xml" },
+    { "source": "/sitemap-profiles.xml", "destination": "https://jaraplugserver.onrender.com/api/sitemap-profiles.xml" },
     {
       "source": "/profile/:username",
       "has": [
