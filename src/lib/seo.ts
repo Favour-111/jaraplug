@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { SITE_URL } from './seoText'
 
 export { SITE_NAME, SITE_URL, snippet } from './seoText'
-const DEFAULT_TITLE = 'JaraPlug | Discover Profiles & Exclusive Content in Lagos'
-const DEFAULT_DESCRIPTION = 'JaraPlug: discover verified profiles, connect privately and unlock exclusive content. Adults only (18+).'
+const DEFAULT_TITLE = 'JaraPlug | Discover Verified Profiles & Exclusive Content Near You'
+const DEFAULT_DESCRIPTION = 'JaraPlug: discover verified profiles near you, connect privately and unlock exclusive content — wherever you are. Adults only (18+).'
 
 export interface Seo {
   /** Full document title. */

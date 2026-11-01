@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft, Camera, Check, ShieldCheck, UserRound } from 'lucide-react'
 import { api, errMsg } from '../lib/api'
 import { queryClient, useAuthState, useConfig, useMe } from '../lib/auth'
-import { Button, Input, Logo, Select } from '../components/ui'
+import { Button, CityInput, Input, Logo } from '../components/ui'
 import { useToast } from '../lib/toast'
 
 type Role = 'CLIENT' | 'PROVIDER'
@@ -56,7 +56,6 @@ export function Onboarding() {
     setDisplayName((d) => d || me.displayName || '')
     setCity((c) => c || me.city || '')
   }, [me])
-  useEffect(() => { if (!city && cfg?.cities.length) setCity(cfg.cities.includes('Lagos') ? 'Lagos' : cfg.cities[0]) }, [cfg, city])
 
   const index = steps.indexOf(view.step)
   const goTo = (step: StepId, dir: 1 | -1) => {
@@ -75,7 +74,7 @@ export function Onboarding() {
       case 'username':
         return USERNAME_RE.test(username.trim().toLowerCase()) ? '' : '3–24 characters: letters, numbers, underscores'
       case 'city':
-        return city ? '' : 'Choose your city'
+        return city.trim().length >= 2 ? '' : 'Enter your city'
       case 'terms':
         return accepted ? '' : 'You must accept to continue'
       default:
@@ -87,7 +86,7 @@ export function Onboarding() {
     if (!role) return
     setBusy(true)
     try {
-      await api.post('/me/onboarding', { role, username: username.trim().toLowerCase(), displayName: displayName.trim() || undefined, city, acceptTerms: true, referralCode: role === 'CLIENT' ? (() => { try { return localStorage.getItem('jp_ref') ?? undefined } catch { return undefined } })() : undefined })
+      await api.post('/me/onboarding', { role, username: username.trim().toLowerCase(), displayName: displayName.trim() || undefined, city: city.trim(), acceptTerms: true, referralCode: role === 'CLIENT' ? (() => { try { return localStorage.getItem('jp_ref') ?? undefined } catch { return undefined } })() : undefined })
       await queryClient.invalidateQueries({ queryKey: ['me'] })
       try { sessionStorage.removeItem('jp_intent'); localStorage.removeItem('jp_ref') } catch { /* */ }
       toast('Welcome to JaraPlug', 'success')
@@ -144,7 +143,7 @@ export function Onboarding() {
           <Slide title="Pick a username" subtitle="Your public handle. Don’t use your real name.">
             <div className="relative">
               <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted">@</span>
-              <Input autoFocus={live} aria-label="Username" className="pl-9" placeholder="lagos_nights" maxLength={24} autoComplete="off" autoCapitalize="none" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/\s/g, '')); setError('') }} />
+              <Input autoFocus={live} aria-label="Username" className="pl-9" placeholder="your_name" maxLength={24} autoComplete="off" autoCapitalize="none" value={username} onChange={(e) => { setUsername(e.target.value.toLowerCase().replace(/\s/g, '')); setError('') }} />
             </div>
             {err(live)}
           </Slide>
@@ -152,7 +151,7 @@ export function Onboarding() {
       case 'city':
         return (
           <Slide title="Where are you based?" subtitle="We use this to show you people and content nearby.">
-            <Select aria-label="City" value={city} onChange={(e) => { setCity(e.target.value); setError('') }}>{cfg?.cities.map((c) => <option key={c}>{c}</option>)}</Select>
+            <CityInput aria-label="City" value={city} suggestions={cfg?.cities} onChange={(e) => { setCity(e.target.value); setError('') }} />
             {err(live)}
           </Slide>
         )

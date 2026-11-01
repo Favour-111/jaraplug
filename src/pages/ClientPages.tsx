@@ -8,7 +8,7 @@ import { useToast } from '../lib/toast'
 import type { ContentItem, ProviderCardData } from '../lib/types'
 import { ProfileCard, ProfileCardSkeleton } from '../components/ProfileCard'
 import { ContentCard } from '../components/ContentCard'
-import { Avatar, Button, EmptyState, Field, Input, Modal, PageHeader, Select, Skeleton, StatusPill, Textarea } from '../components/ui'
+import { Avatar, Button, EmptyState, Field, Input, Modal, PageHeader, CityInput, Skeleton, StatusPill, Textarea } from '../components/ui'
 import { creditsLabel, dateOnly, koboToCredits, naira, SUPPORT_EMAIL } from '../lib/format'
 
 export function SavedPage() {
@@ -128,7 +128,7 @@ export function ClientProfilePage() {
         </div>
         <div className="mt-6 space-y-4">
           <Field label="Display name"><Input defaultValue={me.displayName ?? ''} onChange={(e) => setName(e.target.value)} maxLength={40} /></Field>
-          <Field label="City"><Select defaultValue={me.city ?? 'Lagos'} onChange={(e) => setCity(e.target.value)}>{cfg?.cities.map((c) => <option key={c}>{c}</option>)}</Select></Field>
+          <Field label="City"><CityInput defaultValue={me.city ?? ''} suggestions={cfg?.cities} onChange={(e) => setCity(e.target.value.trim())} /></Field>
           <Button className="w-full" loading={save.isPending} onClick={() => save.mutate()}>Save changes</Button>
         </div>
       </div>

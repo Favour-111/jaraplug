@@ -35,7 +35,7 @@ export function Landing() {
         <div className="pointer-events-none absolute -right-32 top-10 h-96 w-96 rounded-full bg-red/10 blur-3xl" />
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-16 pt-14 md:grid-cols-[1.1fr_.9fr] md:pb-24 md:pt-24">
           <div>
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-muted"><Sparkles size={13} className="text-red" /> Made in Lagos · Find your Jara</p>
+            <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-line bg-card px-3.5 py-1.5 text-xs font-medium text-muted"><Sparkles size={13} className="text-red" /> Find your Jara, wherever you are</p>
             <h1 className="text-[3.4rem] font-extrabold leading-[0.95] tracking-tight sm:text-7xl"><span>Jara</span><span className="text-red">Plug</span></h1>
             <p className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">Discover. Connect. Unlock.</p>
             <p className="mt-4 max-w-md text-base text-muted">Your space to discover profiles, connect privately, and explore exclusive content.</p>

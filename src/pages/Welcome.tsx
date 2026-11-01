@@ -15,8 +15,8 @@ export function Welcome() {
   const { status } = useAuthState()
   const { me } = useMe()
   useSeo({
-    title: 'JaraPlug | Discover Verified Profiles & Exclusive Content in Lagos',
-    description: 'JaraPlug is an adults-only (18+) platform to discover identity-verified profiles in Lagos and across Nigeria, message privately, request bookings and unlock exclusive content.',
+    title: 'JaraPlug | Discover Verified Profiles & Exclusive Content Near You',
+    description: 'JaraPlug is an adults-only (18+) platform to discover identity-verified profiles in your city, message privately, request bookings and unlock exclusive content.',
     path: '/',
   })
   if (status === 'signedIn' && me) return <Navigate to={me.onboarded ? roleHome(me.role) : '/onboarding'} replace />
@@ -28,7 +28,7 @@ export function Welcome() {
     <div className="glow-top flex min-h-screen flex-col items-center justify-center px-4 py-10">
       <Logo size="lg" to={null} />
       <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.35em] text-muted">Find your Jara</p>
-      <h1 className="mt-6 max-w-md text-center text-base font-medium leading-relaxed text-white/85">Discover verified profiles, chat privately and unlock exclusive content in Lagos and across Nigeria.</h1>
+      <h1 className="mt-6 max-w-md text-center text-base font-medium leading-relaxed text-white/85">Discover verified profiles, chat privately and unlock exclusive content — wherever you are.</h1>
       <p className="mt-5 inline-block rounded-lg border border-red/40 bg-red-soft px-3 py-1.5 text-xs font-semibold text-red">18+ · Adults only</p>
 
       <h2 className="mt-8 text-center text-3xl font-extrabold tracking-tight">How would you like to continue?</h2>
@@ -49,7 +49,7 @@ export function Welcome() {
       <section aria-labelledby="about-jaraplug" className="mt-14 w-full max-w-3xl border-t border-line pt-10">
         <h2 id="about-jaraplug" className="text-center text-xl font-bold tracking-tight">What is JaraPlug?</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-relaxed text-muted">
-          JaraPlug is an adults-only profile discovery and exclusive-content platform, made in Lagos. Providers run their own profiles; members browse them, message privately, request bookings and unlock exclusive photos and videos with in-app credits.
+          JaraPlug is an adults-only profile discovery and exclusive-content platform. Providers run their own profiles; members browse them, message privately, request bookings and unlock exclusive photos and videos with in-app credits.
         </p>
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           {[

@@ -55,7 +55,7 @@ export function AppShell({ nav, mobileNav, moreItems, settingsPath, profilePath,
       <header className={`sticky top-0 z-20 border-b border-line/70 bg-bg/90 backdrop-blur ${isChat ? 'hidden md:block' : ''}`}>
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <div className="md:hidden"><Logo size="sm" to={null} /></div>
-          <div className="hidden items-center gap-2 text-sm text-muted md:flex">{me?.role !== 'ADMIN' && <><MapPin size={15} className="text-red" />{me?.city ?? 'Nigeria'}</>}</div>
+          <div className="hidden items-center gap-2 text-sm text-muted md:flex">{me?.role !== 'ADMIN' && me?.city && <><MapPin size={15} className="text-red" />{me.city}</>}</div>
           <div className="flex items-center gap-2.5">
             {me?.role === 'CLIENT' && <Link to="/app/credits" className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-2 text-xs font-semibold hover:border-red/60" aria-label={`${me.creditBalance} credits. Buy more`}><Coins size={14} className="text-amber-400" />{me.creditBalance}</Link>}
             <NotificationBell />

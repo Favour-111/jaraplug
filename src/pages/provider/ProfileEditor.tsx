@@ -5,7 +5,7 @@ import { Camera, CheckCircle2, Eye, Send } from 'lucide-react'
 import { api, errMsg, upload } from '../../lib/api'
 import { useConfig, useMe } from '../../lib/auth'
 import { useToast } from '../../lib/toast'
-import { Avatar, Button, Field, Input, PageHeader, Segmented, Select, Skeleton, StatusPill, Textarea } from '../../components/ui'
+import { Avatar, Button, Field, Input, PageHeader, Segmented, CityInput, Skeleton, StatusPill, Textarea } from '../../components/ui'
 
 interface Prof {
   username: string; displayName: string; biography: string; city: string; area: string | null; displayAge: number | null
@@ -67,8 +67,8 @@ export function ProviderProfileEditor() {
         <h2 className="font-semibold">Basics</h2>
         <Field label="Display name"><Input value={f.displayName} onChange={(e) => set({ displayName: e.target.value })} maxLength={40} /></Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="City"><Select value={f.city} onChange={(e) => set({ city: e.target.value })}>{cfg?.cities.map((c) => <option key={c}>{c}</option>)}</Select></Field>
-          <Field label="General area" hint="e.g. Lekki (not an address)"><Input value={f.area ?? ''} onChange={(e) => set({ area: e.target.value })} maxLength={60} /></Field>
+          <Field label="City"><CityInput value={f.city} suggestions={cfg?.cities} onChange={(e) => set({ city: e.target.value })} /></Field>
+          <Field label="General area" hint="Neighbourhood or district (not an address)"><Input value={f.area ?? ''} onChange={(e) => set({ area: e.target.value })} maxLength={60} /></Field>
         </div>
         <Field label="Age (must be 18+)"><Input type="number" min={18} max={99} value={f.displayAge ?? ''} onChange={(e) => set({ displayAge: e.target.value ? Number(e.target.value) : null })} /></Field>
         <Field label="Biography" hint={`${f.biography.length}/1000 · at least 20 characters. Don't include phone numbers or addresses.`}><Textarea value={f.biography} onChange={(e) => set({ biography: e.target.value })} maxLength={1000} /></Field>

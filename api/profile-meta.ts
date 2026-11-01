@@ -29,7 +29,7 @@ function inject(shell: string, tags: { title: string; description: string; robot
     `<meta name="rating" content="adult" />`,
     tags.url && tags.robots.startsWith('index') ? `<link rel="canonical" href="${esc(tags.url)}" />` : '',
     `<meta property="og:site_name" content="${SITE_NAME}" />`,
-    `<meta property="og:locale" content="en_NG" />`,
+    `<meta property="og:locale" content="en_US" />`,
     `<meta property="og:type" content="${tags.type}" />`,
     `<meta property="og:title" content="${esc(tags.title)}" />`,
     `<meta property="og:description" content="${esc(tags.description)}" />`,

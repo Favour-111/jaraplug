@@ -37,7 +37,7 @@ export function Footer() {
         <div className="flex flex-col justify-between gap-8 md:flex-row">
           <div className="max-w-sm">
             <Logo size="md" />
-            <p className="mt-4 text-sm text-muted">Discover profiles, connect privately and explore exclusive content. Built in Lagos.</p>
+            <p className="mt-4 text-sm text-muted">Discover profiles, connect privately and explore exclusive content.</p>
             <p className="mt-4 inline-block rounded-lg border border-red/40 bg-red-soft px-3 py-1.5 text-xs font-semibold text-red">18+ · Adults only</p>
           </div>
           <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">

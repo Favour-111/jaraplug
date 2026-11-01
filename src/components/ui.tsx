@@ -178,6 +178,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(({ className = '', children, ...p }, ref) => <select ref={ref} className={`input appearance-none ${className}`} {...p}>{children}</select>)
 Input.displayName = 'Input'; Textarea.displayName = 'Textarea'; Select.displayName = 'Select'
 
+/** Free-text city (any city in the world) with suggestions from /config. */
+export function CityInput({ suggestions = [], ...p }: InputHTMLAttributes<HTMLInputElement> & { suggestions?: string[] }) {
+  return <><Input list="city-suggestions" placeholder="Type your city" maxLength={60} autoComplete="address-level2" {...p} /><datalist id="city-suggestions">{suggestions.map((c) => <option key={c} value={c} />)}</datalist></>
+}
+
 export function Button({ variant = 'primary', loading, children, className = '', ...p }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; loading?: boolean }) {
   return (
     <button className={`btn-${variant} ${className}`} disabled={p.disabled || loading} {...p}>

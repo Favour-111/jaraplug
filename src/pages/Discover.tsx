@@ -7,7 +7,7 @@ import { useAuthState, useConfig } from '../lib/auth'
 import type { ProviderCardData } from '../lib/types'
 import { useSeo } from '../lib/seo'
 import { ProfileCard, ProfileCardSkeleton } from '../components/ProfileCard'
-import { Button, EmptyState, ErrorState, Modal, Select, Field } from '../components/ui'
+import { Button, EmptyState, ErrorState, Modal, Select, Field, CityInput } from '../components/ui'
 
 interface Filters { city: string; availability: string; newOnly: boolean; online: boolean }
 const none: Filters = { city: '', availability: '', newOnly: false, online: false }
@@ -28,7 +28,7 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
     initialPageParam: undefined as string | undefined,
     queryFn: ({ pageParam }) =>
       api.get<{ items: ProviderCardData[]; nextCursor: string | null }>('/providers', {
-        q: dq, city: f.city, availability: f.availability, newOnly: f.newOnly || undefined, online: f.online || undefined, cursor: pageParam, limit: 24,
+        q: dq, city: f.city.trim() || undefined, availability: f.availability, newOnly: f.newOnly || undefined, online: f.online || undefined, cursor: pageParam, limit: 24,
       }),
     getNextPageParam: (l) => l.nextCursor ?? undefined,
   })
@@ -39,7 +39,6 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
 
   const chips: { label: string; active: boolean; on: () => void }[] = [
     { label: 'All', active: activeCount === 0, on: () => setF(none) },
-    { label: 'Lagos', active: f.city === 'Lagos', on: () => set({ city: f.city === 'Lagos' ? '' : 'Lagos' }) },
     { label: 'New', active: f.newOnly, on: () => set({ newOnly: !f.newOnly }) },
     { label: 'Available Now', active: f.availability === 'AVAILABLE_NOW', on: () => set({ availability: f.availability === 'AVAILABLE_NOW' ? '' : 'AVAILABLE_NOW' }) },
     { label: 'Online', active: f.online, on: () => set({ online: !f.online }) },
@@ -65,7 +64,7 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
 
       <div className="-mx-4 mt-4 flex items-center gap-2 overflow-x-auto px-4 hide-scrollbar">
         {chips.map((c) => <button key={c.label} onClick={c.on} className={`chip ${c.active ? 'chip-active' : 'hover:border-red/50'}`}>{c.label}</button>)}
-        <button onClick={() => setSheet(true)} aria-label="More filters" className={`chip relative !px-3 ${activeCount > 0 && !chips.slice(1).some((c) => c.active) ? 'chip-active' : ''}`}><SlidersHorizontal size={15} />{(f.city && f.city !== 'Lagos') && <span className="h-1.5 w-1.5 rounded-full bg-red" />}</button>
+        <button onClick={() => setSheet(true)} aria-label="More filters" className={`chip relative !px-3 ${activeCount > 0 && !chips.slice(1).some((c) => c.active) ? 'chip-active' : ''}`}><SlidersHorizontal size={15} />{f.city && <span className="h-1.5 w-1.5 rounded-full bg-red" />}</button>
       </div>
 
       <div className="mt-5">
@@ -85,7 +84,7 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
 
       <Modal open={sheet} onClose={() => setSheet(false)} title="Filters">
         <div className="space-y-4">
-          <Field label="City"><Select value={f.city} onChange={(e) => set({ city: e.target.value })}><option value="">Any city</option>{cfg?.cities.map((c) => <option key={c}>{c}</option>)}</Select></Field>
+          <Field label="City"><CityInput value={f.city} placeholder="Any city" suggestions={cfg?.cities} onChange={(e) => set({ city: e.target.value })} /></Field>
           <Field label="Availability"><Select value={f.availability} onChange={(e) => set({ availability: e.target.value })}><option value="">Any</option><option value="AVAILABLE_NOW">Available now</option><option value="BY_APPOINTMENT">By appointment</option></Select></Field>
           <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={f.newOnly} onChange={(e) => set({ newOnly: e.target.checked })} className="h-4 w-4 accent-[#FF1744]" /> New profiles (last 30 days)</label>
           <label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={f.online} onChange={(e) => set({ online: e.target.checked })} className="h-4 w-4 accent-[#FF1744]" /> Online right now</label>
@@ -98,7 +97,7 @@ export function DiscoverView({ publicMode }: { publicMode?: boolean }) {
 
 export function PublicDiscover() {
   useSeo({
-    title: 'Discover Verified Profiles in Lagos | JaraPlug',
+    title: 'Discover Verified Profiles Near You | JaraPlug',
     description: 'Browse identity- and age-verified profiles on JaraPlug. Filter by city and availability, then connect privately. Adults only (18+).',
     path: '/discover',
   })
