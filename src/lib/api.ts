@@ -11,15 +11,35 @@ let getToken: TokenGetter = async () => null
 export const setTokenGetter = (fn: TokenGetter) => { getToken = fn }
 export const currentToken = () => getToken()
 
-async function request<T>(method: string, path: string, body?: unknown, query?: Record<string, unknown>): Promise<T> {
-  const url = new URL(API_BASE + '/api' + path)
-  if (query) for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== '' && v !== null) url.searchParams.set(k, String(v))
+// ── Demo accounts (testing only): an admin acting as one of their demo providers. Sent as X-Act-As. ──
+export interface ActAs { id: string; username: string | null; displayName: string | null }
+const ACT_AS_KEY = 'jp_act_as'
+export function getActAs(): ActAs | null {
+  try { const v = localStorage.getItem(ACT_AS_KEY); return v ? (JSON.parse(v) as ActAs) : null } catch { return null }
+}
+/** Switches identity and reloads so every cache, socket and route starts fresh as the new account. */
+export function switchActAs(next: ActAs | null, to: string) {
+  try { if (next) localStorage.setItem(ACT_AS_KEY, JSON.stringify(next)); else localStorage.removeItem(ACT_AS_KEY) } catch { /* */ }
+  window.location.assign(to)
+}
+const authHeaders = async () => {
   const headers: Record<string, string> = {}
   const token = await getToken()
   if (token) headers.Authorization = `Bearer ${token}`
+  const actAs = getActAs()
+  if (token && actAs) headers['X-Act-As'] = actAs.id
+  return headers
+}
+
+async function request<T>(method: string, path: string, body?: unknown, query?: Record<string, unknown>): Promise<T> {
+  const url = new URL(API_BASE + '/api' + path)
+  if (query) for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== '' && v !== null) url.searchParams.set(k, String(v))
+  const headers = await authHeaders()
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   const res = await fetch(url, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined })
   const data = await res.json().catch(() => ({}))
+  // The demo account was deleted or the feature was switched off: drop back to the admin's own account.
+  if (res.status === 403 && data.code === 'ACT_AS_INVALID' && getActAs()) switchActAs(null, '/admin/demo-accounts')
   if (!res.ok) throw new ApiError(res.status, data.error ?? 'Something went wrong', data.code, data.details)
   return data as T
 }
@@ -34,11 +54,11 @@ export const api = {
 
 /** multipart upload with progress (fetch can't report upload progress). */
 export async function upload<T>(path: string, form: FormData, onProgress?: (pct: number) => void): Promise<T> {
-  const token = await getToken()
+  const headers = await authHeaders()
   return new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${API_BASE}/api${path}`)
-    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    for (const [k, v] of Object.entries(headers)) xhr.setRequestHeader(k, v)
     xhr.upload.onprogress = (e) => e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100))
     xhr.onload = () => {
       let data: any = {}

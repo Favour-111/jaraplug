@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Avatar, Logo, Modal } from '../components/ui'
 import { NotificationBell } from '../components/Bell'
 import { useAuthState, useMe } from '../lib/auth'
+import { getActAs, switchActAs } from '../lib/api'
 
 export interface NavItem { to: string; label: string; icon: ReactNode; badge?: number; end?: boolean }
 
@@ -26,7 +27,7 @@ export function AppShell({ nav, mobileNav, moreItems, settingsPath, profilePath,
     return () => document.removeEventListener('mousedown', h)
   }, [])
 
-  const doSignOut = async () => { await signOut(); qc.clear(); nav2('/') }
+  const doSignOut = async () => { if (getActAs()) return switchActAs(null, '/admin/demo-accounts'); await signOut(); qc.clear(); nav2('/') }
   const isChat = /\/messages\/[^/]+$/.test(loc.pathname)
   const name = me?.displayName ?? me?.username ?? 'Account'
 

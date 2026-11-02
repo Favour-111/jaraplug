@@ -1,7 +1,7 @@
-import { Coins, Gift, Banknote, CalendarDays, Flag, FileVideo, Heart, Home, LayoutDashboard, LockKeyhole, MessageCircle, ReceiptText, ScrollText, Settings, Upload, UserCheck, UserRound, Users, LifeBuoy, BadgeCheck } from 'lucide-react'
+import { Coins, Gift, Banknote, CalendarDays, Flag, FileVideo, Heart, Home, LayoutDashboard, LockKeyhole, MessageCircle, ReceiptText, ScrollText, Settings, Upload, UserCheck, UserRound, Users, LifeBuoy, BadgeCheck, FlaskConical, Clapperboard } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { AppShell, type NavItem } from './AppShell'
-import { useMe } from '../lib/auth'
+import { useConfig, useMe } from '../lib/auth'
 import { ReferralPopup } from '../components/Referral'
 
 const ic = 21
@@ -24,6 +24,7 @@ export function ClientLayout() {
   const { me } = useMe()
   const mobile: NavItem[] = [
     { to: '/app/discover', label: 'Home', icon: <Home size={ic} />, end: true },
+    { to: '/app/gallery', label: 'Gallery', icon: <Clapperboard size={ic} /> },
     { to: '/app/messages', label: 'Messages', icon: <MessageCircle size={ic} />, badge: me?.counts.unreadMessages },
     { to: '/app/bookings', label: 'Bookings', icon: <CalendarDays size={ic} /> },
     { to: '/app/saved', label: 'Saved', icon: <Heart size={ic} /> },
@@ -62,6 +63,7 @@ export function ProviderLayout() {
 }
 
 export function AdminLayout() {
+  const { data: cfg } = useConfig()
   const all: NavItem[] = [
     { to: '/admin', label: 'Overview', icon: <LayoutDashboard size={ic} />, end: true },
     { to: '/admin/users', label: 'Users', icon: <Users size={ic} /> },
@@ -72,6 +74,7 @@ export function AdminLayout() {
     { to: '/admin/support', label: 'Support', icon: <LifeBuoy size={ic} /> },
     { to: '/admin/referrals', label: 'Referrals', icon: <Gift size={ic} /> },
     { to: '/admin/audit', label: 'Audit log', icon: <ScrollText size={ic} /> },
+    ...(cfg?.demoAccounts ? [{ to: '/admin/demo-accounts', label: 'Demo accounts', icon: <FlaskConical size={ic} /> }] : []),
   ]
   const mobile = all.slice(0, 4)
   return <AppShell nav={all} mobileNav={mobile} moreItems={all.slice(4)} settingsPath="/admin" title="Admin" />

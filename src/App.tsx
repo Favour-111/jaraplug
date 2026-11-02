@@ -26,7 +26,9 @@ import { EarningsPage } from './pages/provider/Earnings'
 import { AdminAudit, AdminContent, AdminReferrals, AdminOverview, AdminReports, AdminSupport, AdminTransactions, AdminUsers, AdminVerifications } from './pages/admin/Admin'
 import { EmptyState } from './components/ui'
 import { Link } from 'react-router-dom'
-import { API_BASE } from './lib/api'
+import { API_BASE, getActAs } from './lib/api'
+import { ActAsBanner, AdminDemoAccounts } from './pages/admin/DemoAccounts'
+import { GalleryPage } from './pages/Gallery'
 import { useSeo } from './lib/seo'
 
 function ScrollTop() {
@@ -55,7 +57,7 @@ let lastTracked = { path: '', at: 0 }
 function VisitTracker() {
   const { pathname } = useLocation()
   useEffect(() => {
-    if (pathname.startsWith('/admin')) return
+    if (pathname.startsWith('/admin') || getActAs()) return
     const now = Date.now()
     if (lastTracked.path === pathname && now - lastTracked.at < 2000) return // React StrictMode runs effects twice in dev
     lastTracked = { path: pathname, at: now }
@@ -70,6 +72,7 @@ export default function App() {
       <VisitTracker />
       <ReferralCapture />
       <ScrollTop />
+      <ActAsBanner />
       <Routes>
         {/* Public */}
         <Route path="/" element={<Welcome />} />
@@ -96,6 +99,7 @@ export default function App() {
         </Route>
         <Route element={<RequireAuth roles={['CLIENT']} />}>
           <Route path="/book/:username" element={<BookingRequestPage />} />
+          <Route path="/app/gallery" element={<GalleryPage />} />
         </Route>
 
         {/* Client */}
@@ -143,6 +147,7 @@ export default function App() {
             <Route path="support" element={<AdminSupport />} />
             <Route path="referrals" element={<AdminReferrals />} />
             <Route path="audit" element={<AdminAudit />} />
+            <Route path="demo-accounts" element={<AdminDemoAccounts />} />
           </Route>
         </Route>
         <Route path="*" element={<NotFound />} />

@@ -62,6 +62,7 @@ export interface ProviderProfileData extends ProviderCardData {
 
 export interface AppConfig {
   authMode: 'clerk' | 'dev'
+  demoAccounts?: boolean
   cities: string[]
   maxImageMb: number
   maxVideoMb: number

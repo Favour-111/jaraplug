@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { io, type Socket } from 'socket.io-client'
 import { useQueryClient } from '@tanstack/react-query'
-import { API_BASE, currentToken } from './api'
+import { API_BASE, currentToken, getActAs } from './api'
 import { useAuthState } from './auth'
 import { useToast } from './toast'
 import type { Message } from './types'
@@ -21,7 +21,7 @@ export function RealtimeProvider({ children }: { children: ReactNode }) {
     if (status !== 'signedIn') return
     const s = io(API_BASE, {
       // A function so every (re)connect gets a fresh token — Clerk session tokens are short-lived.
-      auth: (cb) => { currentToken().then((token) => cb({ token })) },
+      auth: (cb) => { currentToken().then((token) => cb({ token, actAs: getActAs()?.id })) },
       transports: ['websocket', 'polling'],
     })
     setSocket(s)
