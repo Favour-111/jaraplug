@@ -73,7 +73,7 @@ export function ProviderProfilePage() {
   const gallery = p.content.filter((c) => c.visibility === 'PUBLIC' && c.mediaType === 'IMAGE')
 
   const Grid = ({ items }: { items: typeof p.content }) => (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{items.map((c) => <ContentCard key={c.id} c={c} owner={p.isSelf} />)}</div>
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{items.map((c) => <ContentCard key={c.id} c={c} owner={p.isSelf} sample={p.isDemo && !p.isSelf} />)}</div>
   )
 
   return (
@@ -102,7 +102,7 @@ export function ProviderProfilePage() {
           </div>
           <div className="absolute inset-x-0 bottom-0 p-5">
             <h1 className="flex items-center gap-2 text-3xl font-extrabold tracking-tight">{p.displayName}{p.age && <span className="font-light text-white/90">{p.age}</span>}{p.verified && <VerifiedBadge size={22} />}{p.isDemo && <DemoChip />}</h1>
-            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80"><span className="flex items-center gap-1"><MapPin size={14} />{p.area ? `${p.area}, ` : ''}{p.city}</span><OnlineDot online={p.online || p.availabilityStatus === 'AVAILABLE_NOW'} label={p.online ? 'Online' : p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available now' : 'By appointment'} /></p>
+            <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-white/80"><span className="flex items-center gap-1"><MapPin size={14} />{p.area ? `${p.area}, ` : ''}{p.city}</span>{!p.isDemo && <OnlineDot online={p.online || p.availabilityStatus === 'AVAILABLE_NOW'} label={p.online ? 'Online' : p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available now' : 'By appointment'} />}</p>
           </div>
         </div>
       </div>
@@ -118,6 +118,13 @@ export function ProviderProfilePage() {
           </div>
         )}
 
+        {p.isDemo && !p.isSelf ? (
+          <div className="mt-6 rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
+            <p className="font-semibold">This is a sample profile</p>
+            <p className="mt-1 text-amber-200/80">It's a fictional example of what a JaraPlug profile looks like. It isn't a real person, so messaging, bookings and purchases are switched off.</p>
+            <Link to="/discover" className="btn-primary btn-sm mt-3 inline-flex">Browse real profiles</Link>
+          </div>
+        ) : (
         <div className="mt-6 grid grid-cols-2 gap-3">
           {p.isSelf ? (
             <Link to="/provider/profile" className="btn-primary col-span-2"><Pencil size={16} /> Edit my profile</Link>
@@ -128,13 +135,14 @@ export function ProviderProfilePage() {
             </>
           )}
         </div>
+        )}
         {p.isSelf && <p className="mt-3 text-center text-xs text-muted">This is how clients see your profile.</p>}
 
         <Tabs className="mt-6" value={tab} onChange={setTab} tabs={[{ key: 'about', label: 'About' }, { key: 'photos', label: 'Photos' }, { key: 'videos', label: 'Videos' }]} />
         <div className="pt-5">
           {tab === 'about' && (
             <dl className="card divide-y divide-line text-sm">
-              {[['Location', `${p.area ? p.area + ', ' : ''}${p.city}`], ['Availability', p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available now' : p.availabilityStatus === 'BY_APPOINTMENT' ? 'By appointment' : 'Offline'], ['Verification', p.verified ? 'Identity & age verified' : 'Not verified'], ['Member since', new Date(p.memberSince ?? Date.now()).toLocaleDateString('en-NG', { month: 'long', year: 'numeric' })]].map(([k, v]) => (
+              {[['Location', `${p.area ? p.area + ', ' : ''}${p.city}`], ['Availability', p.isDemo ? 'Not bookable (sample profile)' : p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available now' : p.availabilityStatus === 'BY_APPOINTMENT' ? 'By appointment' : 'Offline'], ['Verification', p.verified ? 'Identity & age verified' : 'Not verified'], ['Member since', new Date(p.memberSince ?? Date.now()).toLocaleDateString('en-NG', { month: 'long', year: 'numeric' })]].map(([k, v]) => (
                 <div key={k} className="flex justify-between gap-4 px-4 py-3"><dt className="text-muted">{k}</dt><dd className="text-right font-medium">{v}</dd></div>
               ))}
             </dl>

@@ -6,11 +6,12 @@ import { useCreditUnit } from '../lib/auth'
 import { LoadImage, StatusPill } from './ui'
 
 /** Locked thumbnails are blurred ON THE SERVER; the real file is never sent until entitlement is verified. */
-export function ContentCard({ c, onOpen, owner }: { c: ContentItem; onOpen?: (c: ContentItem) => void; owner?: boolean }) {
+export function ContentCard({ c, onOpen, owner, sample }: { c: ContentItem; onOpen?: (c: ContentItem) => void; owner?: boolean; sample?: boolean }) {
   const nav = useNavigate()
   const unit = useCreditUnit()
   const paid = c.visibility === 'PAID'
   const click = () => {
+    if (c.locked && sample && paid) return // sample profiles don't sell content
     if (c.locked) nav(paid ? `/unlock/${c.id}` : `/unlock/${c.id}`)
     else onOpen ? onOpen(c) : nav(`/watch/${c.id}`)
   }
@@ -31,9 +32,11 @@ export function ContentCard({ c, onOpen, owner }: { c: ContentItem; onOpen?: (c:
       <div className="space-y-2 p-3">
         <div className="flex items-start justify-between gap-2">
           <p className="truncate text-sm font-semibold">{c.title}</p>
-          {paid && <p className="flex shrink-0 items-center gap-1 text-sm font-bold text-white"><Coins size={13} className="text-amber-400" />{creditsLabel(koboToCredits(c.price, unit))}</p>}
+          {paid && !sample && <p className="flex shrink-0 items-center gap-1 text-sm font-bold text-white"><Coins size={13} className="text-amber-400" />{creditsLabel(koboToCredits(c.price, unit))}</p>}
         </div>
-        {c.locked ? (
+        {c.locked && sample && paid ? (
+          <p className="text-[11px] text-muted">Sample, not for sale</p>
+        ) : c.locked ? (
           <button className="btn-primary btn-sm w-full" onClick={click}><Lock size={13} /> {paid ? 'Unlock' : 'Members only'}</button>
         ) : (
           <p className="text-[11px] text-muted">{c.visibility === 'PUBLIC' ? 'Public' : c.visibility === 'FREE_MEMBERS' ? 'Free for members' : 'Unlocked'}</p>

@@ -52,9 +52,15 @@ export const api = {
   delete: <T>(path: string, body?: unknown) => request<T>('DELETE', path, body),
 }
 
-/** multipart upload with progress (fetch can't report upload progress). */
+/**
+ * multipart upload with progress (fetch can't report upload progress). Sends an upload ticket alongside the session
+ * token: session tokens expire within a minute, which a slow upload can outlast before the API sees the request.
+ */
 export async function upload<T>(path: string, form: FormData, onProgress?: (pct: number) => void): Promise<T> {
   const headers = await authHeaders()
+  if (headers.Authorization) {
+    try { headers['X-Upload-Ticket'] = (await request<{ ticket: string }>('POST', '/me/upload-ticket', {})).ticket } catch { /* fall back to the session token */ }
+  }
   return new Promise<T>((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${API_BASE}/api${path}`)

@@ -60,11 +60,11 @@ export function AdminDemoAccounts() {
   })
   const go = async (id: string, to?: string) => { setBusy(id); try { await actAs(id, to) } catch (e) { toast(errMsg(e), 'error'); setBusy(null) } }
 
-  if (cfg && !cfg.demoAccounts) return <div><PageHeader title="Demo accounts" /><EmptyState icon={<FlaskConical />} title="Demo accounts are switched off" text="Set DEMO_ACCOUNTS=true in the server's .env (development or staging only) and restart the API." /></div>
+  if (cfg && !cfg.demoAccounts) return <div><PageHeader title="Demo accounts" /><EmptyState icon={<FlaskConical />} title="Demo accounts are switched off" text="Set SAMPLE_PROFILES=true in the server's environment (or DEMO_ACCOUNTS=true outside production) and restart the API." /></div>
   return (
     <div>
       <PageHeader title="Demo accounts" subtitle="Fictional providers for testing and demos. Open one to post content, reply to messages and handle bookings as that account." action={<Button className="btn-sm" onClick={() => setCreating(true)}><Plus size={15} /> New demo provider</Button>} />
-      <p className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">Testing only. These profiles are marked as demo, are never listed in search engines, and the server refuses to start in production with this feature on.</p>
+      <p className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-300">These profiles show a "Sample" badge everywhere, are never listed in search engines, appear after real providers, and can't message, take bookings or sell content. Only use invented names and photos you have the rights to — never a real person's name or likeness.</p>
       {isLoading || !data ? <Skeleton className="h-48" /> : !data.items.length ? <EmptyState icon={<UserRound />} title="No demo accounts yet" action={<Button onClick={() => setCreating(true)}><Plus size={15} /> New demo provider</Button>} /> : (
         <div className="grid gap-3 md:grid-cols-2">{data.items.map((a) => (
           <div key={a.id} className="card p-4">

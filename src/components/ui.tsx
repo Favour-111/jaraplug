@@ -241,4 +241,5 @@ export function Stat({ label, value, hint, accent }: { label: string; value: Rea
   )
 }
 
-export const DemoChip = () => <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/60">Demo</span>
+/** Labels a fictional (isDemo) provider. Shown everywhere such a profile appears so nobody mistakes it for a real person. */
+export const DemoChip = () => <span className="rounded bg-amber-400/90 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">Sample</span>

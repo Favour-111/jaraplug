@@ -34,12 +34,16 @@ export function ProfileCard({ p, onRequireLogin }: { p: ProviderCardData; onRequ
               {p.verified && <VerifiedBadge size={14} />}
             </p>
             <p className="mt-1 flex items-center gap-1 text-[11px] text-white/70"><MapPin size={11} />{p.area ?? p.city}</p>
-            <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium">
-              <span className={`h-1.5 w-1.5 rounded-full ${p.online || p.availabilityStatus === 'AVAILABLE_NOW' ? 'bg-ok' : 'bg-[#52525b]'}`} />
-              <span className={p.online || p.availabilityStatus === 'AVAILABLE_NOW' ? 'text-ok' : 'text-white/50'}>
-                {p.online ? 'Online' : p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available' : 'By appointment'}
-              </span>
-            </p>
+            {p.isDemo ? (
+              <p className="mt-1 text-[11px] font-medium text-white/50">Sample profile · not bookable</p>
+            ) : (
+              <p className="mt-1 flex items-center gap-1.5 text-[11px] font-medium">
+                <span className={`h-1.5 w-1.5 rounded-full ${p.online || p.availabilityStatus === 'AVAILABLE_NOW' ? 'bg-ok' : 'bg-[#52525b]'}`} />
+                <span className={p.online || p.availabilityStatus === 'AVAILABLE_NOW' ? 'text-ok' : 'text-white/50'}>
+                  {p.online ? 'Online' : p.availabilityStatus === 'AVAILABLE_NOW' ? 'Available' : 'By appointment'}
+                </span>
+              </p>
+            )}
           </div>
         </div>
       </Link>
