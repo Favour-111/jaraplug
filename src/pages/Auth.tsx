@@ -64,8 +64,8 @@ export function AuthPage({ mode }: { mode: 'login' | 'register' }) {
   const goBack = () => (window.history.length > 1 ? nav(-1) : nav('/'))
   const circle = 'grid h-11 w-11 place-items-center rounded-full bg-card text-white/90 transition hover:bg-[#222] hover:text-white'
   return (
-    <div className="flex min-h-screen justify-center px-4 py-6 sm:py-8">
-      <div className="flex w-full max-w-[400px] flex-col">
+    <div className="flex min-h-screen justify-center overflow-x-hidden px-6 py-6 sm:px-8 sm:py-8">
+      <div className="flex w-full min-w-0 max-w-[440px] flex-col">
         <div className="flex items-center justify-between">
           <button type="button" onClick={goBack} aria-label="Go back" className={circle}><ArrowLeft size={18} /></button>
           <a href={`mailto:${SUPPORT_EMAIL}`} aria-label="Contact support" title="Contact support" className={circle}><Headphones size={18} /></a>
