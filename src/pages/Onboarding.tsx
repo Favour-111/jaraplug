@@ -160,8 +160,8 @@ export function Onboarding() {
           <Slide title="Almost done" subtitle="One last thing before we set up your account.">
             {role === 'PROVIDER' && (
               <div className="mb-5 rounded-xl border border-line bg-card p-4 text-sm text-muted">
-                <p className="flex items-center gap-2 font-medium text-white"><Camera size={16} className="text-red" /> Next: photo, bio &amp; verification</p>
-                <p className="mt-1.5">You’ll add your photo and biography, confirm you own the rights to your media and that it only shows consenting adults, then submit for identity &amp; age review. Your legal identity is never shown publicly.</p>
+                <p className="flex items-center gap-2 font-medium text-white"><Camera size={16} className="text-red" /> Next: photo &amp; bio</p>
+                <p className="mt-1.5">You’ll add your photo and biography, confirm you own the rights to your media and that it only shows consenting adults, and your profile goes live straight away. A Verified badge is optional and can be requested later.</p>
               </div>
             )}
             <label className="flex items-start gap-3 text-sm text-muted">

@@ -26,12 +26,12 @@ export function ProviderDashboard() {
         <div><p className="flex items-center gap-2 text-xl font-extrabold">{name}{verified && <VerifiedBadge size={18} />}</p><p className="text-sm text-muted">Provider Dashboard</p></div></div>
 
       {!isLoading && !verified && (
-        <Link to="/provider/profile" className="mt-5 flex items-center gap-3 rounded-2xl border border-red/30 bg-red-soft p-4">
+        <Link to="/provider/profile" className="mt-5 flex items-center gap-3 rounded-2xl border border-line bg-card p-4">
           {data?.verificationStatus === 'PENDING' ? <Clock className="shrink-0 text-red" /> : <ShieldAlert className="shrink-0 text-red" />}
-          <span className="flex-1 text-sm"><span className="block font-semibold">{data?.verificationStatus === 'PENDING' ? 'Your profile is under review' : data?.verificationStatus === 'REJECTED' ? 'Verification wasn’t approved' : 'Finish your profile to go live'}</span><span className="text-muted">{data?.verificationStatus === 'PENDING' ? 'You’ll be notified when a moderator decides.' : 'Add your photo, bio and consent, then submit for identity & age verification.'}</span></span><ChevronRight size={18} className="text-muted" />
+          <span className="flex-1 text-sm"><span className="block font-semibold">{data?.verificationStatus === 'PENDING' ? 'Your Verified badge is being reviewed' : 'Your profile is live'}</span><span className="text-muted">{data?.verificationStatus === 'PENDING' ? 'Your profile is already public. You’ll be notified when a moderator decides.' : 'Add a profile photo so clients can find you. Want a Verified badge? Request one from your profile (optional).'}</span></span><ChevronRight size={18} className="text-muted" />
         </Link>
       )}
-      {verified && <p className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ok"><BadgeCheck size={16} /> Verified — your profile is live and you can publish content.</p>}
+      {verified && <p className="mt-5 flex items-center gap-2 rounded-2xl border border-ok/30 bg-ok/10 px-4 py-3 text-sm text-ok"><BadgeCheck size={16} /> Verified — your profile shows the Verified badge.</p>}
 
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {isLoading ? Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-24" />) : (

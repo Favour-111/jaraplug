@@ -35,7 +35,7 @@ export function ProviderProfileEditor() {
   })
   const submit = useMutation({
     mutationFn: async () => { await api.put('/provider/profile', { biography: f!.biography, displayAge: f!.displayAge, consentConfirmed: f!.consentConfirmed, city: f!.city, area: f!.area || null, displayName: f!.displayName }); return api.post('/provider/profile/submit') },
-    onSuccess: () => { refresh(); toast('Submitted for review', 'success') }, onError: (e) => toast(errMsg(e), 'error'),
+    onSuccess: () => { refresh(); toast('Verified badge requested', 'success') }, onError: (e) => toast(errMsg(e), 'error'),
   })
 
   if (isLoading || !f) return <div className="space-y-3"><Skeleton className="h-24" /><Skeleton className="h-64" /></div>
@@ -49,9 +49,9 @@ export function ProviderProfileEditor() {
       <section className="card p-5">
         <div className="flex items-center justify-between"><h2 className="font-semibold">Verification</h2><StatusPill status={status} /></div>
         <p className="mt-2 text-sm text-muted">
-          {status === 'VERIFIED' ? 'Your identity and age are verified. Your profile is discoverable according to your visibility setting.' : status === 'PENDING' ? 'A moderator is reviewing your submission. Editing is still allowed.' : status === 'REJECTED' ? 'Your last submission wasn’t approved. Update your profile and submit again.' : 'Complete your profile, then submit it for identity & age verification. Your legal identity is never shown publicly and ID documents are not stored by JaraPlug.'}
+          {status === 'VERIFIED' ? 'Your identity and age are verified, so your profile shows the Verified badge.' : status === 'PENDING' ? 'A moderator is reviewing your badge request. Your profile is already public and editing is still allowed.' : status === 'REJECTED' ? 'Your badge request wasn’t approved. Your profile is still public. Update it and request again.' : 'Your profile is public according to your visibility setting. Optionally, request identity & age verification to get a Verified badge. Your legal identity is never shown publicly.'}
         </p>
-        {status !== 'VERIFIED' && status !== 'PENDING' && <Button className="mt-4" loading={submit.isPending} onClick={() => submit.mutate()}><Send size={15} /> Submit for review</Button>}
+        {status !== 'VERIFIED' && status !== 'PENDING' && <Button className="mt-4" loading={submit.isPending} onClick={() => submit.mutate()}><Send size={15} /> Request Verified badge</Button>}
       </section>
 
       <section className="card p-5">

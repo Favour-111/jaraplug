@@ -86,7 +86,6 @@ export function UploadContentPage() {
   const [consent, setConsent] = useState(false)
   const [progress, setProgress] = useState<number | null>(null)
   const [drag, setDrag] = useState(false)
-  const verified = me?.providerProfile?.verificationStatus === 'VERIFIED'
 
   useEffect(() => { if (!file) return setPreview(null); const u = URL.createObjectURL(file); setPreview(u); return () => URL.revokeObjectURL(u) }, [file])
 
@@ -122,7 +121,6 @@ export function UploadContentPage() {
   return (
     <div className="mx-auto max-w-xl">
       <PageHeader title="Upload Content" />
-      {!verified && <p className="mb-4 flex gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-sm text-amber-300"><Info size={16} className="mt-0.5 shrink-0" />Your profile isn't verified yet. You can save drafts, but publishing unlocks after verification.</p>}
       <Segmented value={kind} onChange={(k) => { setKind(k); setFile(null) }} options={[{ key: 'photo', label: 'Photos' }, { key: 'video', label: 'Videos' }]} />
 
       <button type="button" onClick={() => input.current?.click()} onDragOver={(e) => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={(e) => { e.preventDefault(); setDrag(false); pick(e.dataTransfer.files[0]) }}
@@ -154,7 +152,7 @@ export function UploadContentPage() {
         {progress !== null && <div><div className="h-2 overflow-hidden rounded-full bg-surface"><div className="h-full bg-gradient-to-r from-red-dark to-red transition-all" style={{ width: `${progress}%` }} /></div><p className="mt-1.5 text-xs text-muted">{progress < 100 ? `Uploading… ${progress}%` : 'Processing…'}</p></div>}
         <div className="grid grid-cols-2 gap-3">
           <Button variant="secondary" disabled={!can} onClick={() => send.mutate({ publish: false })}>Save draft</Button>
-          <Button disabled={!can || !consent || !verified} loading={send.isPending} onClick={() => send.mutate({ publish: true })}>Upload & publish</Button>
+          <Button disabled={!can || !consent} loading={send.isPending} onClick={() => send.mutate({ publish: true })}>Upload & publish</Button>
         </div>
         {!consent && file && <p className="text-center text-xs text-muted">Confirm consent to enable publishing.</p>}
       </div>
